@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The AI‑Powered UV Printing Platform | MakeItReal</title>
+    <meta name="description" content="Built for UV printing, MakeItReal delivers a vast library of projects, templates, and elements, a generative AI toolkit for 3D textures, and streamlined workflows—all in one platform." />
+    <meta name="image" content="https://makeground.com/eyufymake_logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The AI‑Powered UV Printing Platform" />
+    <meta name="twitter:description" content="Built for UV printing, MakeItReal delivers a vast library of projects, templates, and elements, a generative AI toolkit for 3D textures, and streamlined workflows—all in one platform." />
+    <meta name="twitter:image" content="https://makeground.com/eyufymake_logo.png" />
+    <script src="/error-handler.js?v=v1.22.0_2610161757_community"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5XH96JX1TD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());</script>
+    <meta name="app-version" content="v1.22.0_2610161757_community" />
+    <meta name="app-shared-version" content="v1.22.0_2610161757_shared" />
+    <meta name="app-editor-version" content="v1.22.0_2610161757_editor" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, maximum-scale=1, minimum-scale=1, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
+    />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" />
+    <script>
+      window.process = window.process || { env: { NODE_ENV: 'development' }, platform: 'browser' };
+      window.global = window;
+    </script>
+    <script>
+      window.__APP_BOOTED__ = false;
+      window.__APP_BOOT_START__ = Date.now();
+      (function () {
+        var TIMEOUT_MS = 15000;
+        var DB_NAME = 'Database_ak';
+        var STORE = 'Statistical_ak';
+
+        function reportLoadFailed() {
+          var root = document.getElementById('root');
+          var now = Date.now();
+          var detail = {
+            type: 'sourceError',
+            readyState: document.readyState,
+            hasRoot: !!root,
+            rootChildCount: root ? root.childElementCount : 0,
+            hasModuleScript: !!document.querySelector('script[type="module"]'),
+            elapsedMs: now - window.__APP_BOOT_START__,
+            ts: now,
+          };
+          // 不指定版本打开：若写死版本号，会在 DB 尚未建立时抢占版本，导致应用后续建表/升级失效
+          var req = indexedDB.open(DB_NAME);
+          req.onsuccess = function () {
+            var db = req.result;
+            try {
+              if (!db.objectStoreNames.contains(STORE)) {
+                db.close();
+                return;
+              }
+              var key = 'load_failed_' + now + '_' + Math.random().toString(36).slice(2, 8);
+              var tx = db.transaction([STORE], 'readwrite');
+              tx.objectStore(STORE).put(
+                {
+                  pageId: key,
+                  createTime: now,
+                  updateTime: now,
+                  isClose: true,
+                  data: [
+                    {
+                      name: 'perf_blank_screen',
+                      params: detail,
+                      properties: { event_time: Math.floor(now / 1000) },
+                    },
+                  ],
+                },
+                key,
+              );
+              tx.oncomplete = function () {
+                db.close();
+              };
+              tx.onerror = function () {
+                db.close();
+              };
+            } catch (e) {
+              db.close();
+            }
+          };
+          req.onerror = function () {};
+        }
+
+        setTimeout(function () {
+          if (!window.__APP_BOOTED__) reportLoadFailed();
+        }, TIMEOUT_MS);
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-zfHr6AVF.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-C0FnF6B9.js">
+    <link rel="modulepreload" crossorigin href="/assets/react-Dj_ZO3BH.js">
+    <link rel="modulepreload" crossorigin href="/assets/react-dom-C8krkOG6.js">
+    <link rel="modulepreload" crossorigin href="/assets/client-kYujjP91.js">
+    <link rel="modulepreload" crossorigin href="/assets/asyncToGenerator-CmzAPRg5.js">
+    <link rel="modulepreload" crossorigin href="/assets/jszip.min-CmXXn2T4.js">
+    <link rel="modulepreload" crossorigin href="/assets/three.module-DInMw1Bt.js">
+    <link rel="modulepreload" crossorigin href="/assets/events-CTIAewr0.js">
+    <link rel="modulepreload" crossorigin href="/assets/src-BRMo40j2.js">
+    <link rel="modulepreload" crossorigin href="/assets/empty-module-Cyy5pdOs.js">
+    <link rel="modulepreload" crossorigin href="/assets/ConsoleUtil-CoiF8-Cy.js">
+    <link rel="modulepreload" crossorigin href="/assets/preload-helper-CYQMH_Gl.js">
+    <link rel="modulepreload" crossorigin href="/assets/2dEditorCons-BBUlvbln.js">
+    <link rel="modulepreload" crossorigin href="/assets/emotion-react-jsx-runtime.browser.development.esm-B5xIQ7ys.js">
+    <link rel="modulepreload" crossorigin href="/assets/icon-BhyyT5gk.js">
+    <link rel="modulepreload" crossorigin href="/assets/md5-RhvhbVAm.js">
+    <link rel="modulepreload" crossorigin href="/assets/eventbus-BgGQtRdq.js">
+    <link rel="modulepreload" crossorigin href="/assets/__vite-browser-external-DpH90L5b.js">
+    <link rel="modulepreload" crossorigin href="/assets/_baseIsEqual-CPhXpXqD.js">
+    <link rel="modulepreload" crossorigin href="/assets/purify.es-Cfcxcd1Q.js">
+    <link rel="modulepreload" crossorigin href="/assets/eventTypes-CnAFBWA0.js">
+    <link rel="modulepreload" crossorigin href="/assets/stringUtil-BkFPG1GP.js">
+    <link rel="modulepreload" crossorigin href="/assets/i18n-DGDESupg.js">
+    <link rel="modulepreload" crossorigin href="/assets/agreement-jtAi2FIG.js">
+    <link rel="modulepreload" crossorigin href="/assets/data-cache-eaN2mqN2.js">
+    <link rel="modulepreload" crossorigin href="/assets/page-search-D0gMkdn-.js">
+    <link rel="modulepreload" crossorigin href="/assets/user-DbXST4SA.js">
+    <link rel="modulepreload" crossorigin href="/assets/credit-BXfDH2DE.js">
+    <link rel="modulepreload" crossorigin href="/assets/logoutUtils-BLX347O0.js">
+    <link rel="modulepreload" crossorigin href="/assets/toString-C33jps41.js">
+    <link rel="modulepreload" crossorigin href="/assets/login-SVDL339w.js">
+    <link rel="modulepreload" crossorigin href="/assets/codes-D8hNXmrS.js">
+    <link rel="modulepreload" crossorigin href="/assets/toast-DQb82UNq.js">
+    <link rel="modulepreload" crossorigin href="/assets/printConfigManager-DHE4yXuH.js">
+    <link rel="modulepreload" crossorigin href="/assets/printConfigKeys-D4ZL2zPL.js">
+    <link rel="modulepreload" crossorigin href="/assets/cmsFilterParam-PZG5Ndn6.js">
+    <link rel="modulepreload" crossorigin href="/assets/page-account-BjcOYxtF.js">
+    <link rel="modulepreload" crossorigin href="/assets/LoginCn-bbuTe2F-.js">
+    <link rel="modulepreload" crossorigin href="/assets/useEditorContext-9wfqHPUK.js">
+    <link rel="modulepreload" crossorigin href="/assets/webLogin-Cx3anuyC.js">
+    <link rel="modulepreload" crossorigin href="/assets/editorUtils-BCH_Lgsz.js">
+    <link rel="modulepreload" crossorigin href="/assets/arrow_down-BRu3hSmg.js">
+    <link rel="modulepreload" crossorigin href="/assets/close-CAv6qF6_.js">
+    <link rel="modulepreload" crossorigin href="/assets/loading-C39nE2d6.js">
+    <link rel="modulepreload" crossorigin href="/assets/credit-ANdA88FG.js">
+    <link rel="modulepreload" crossorigin href="/assets/user-50RyZLk6.js">
+    <link rel="modulepreload" crossorigin href="/assets/AiCreditBenefitsTip-DyO82uii.js">
+    <link rel="modulepreload" crossorigin href="/assets/page-home-xBR8G5B8.js">
+    <link rel="modulepreload" crossorigin href="/assets/CmsDataManager-CEq1uSZy.js">
+    <link rel="modulepreload" crossorigin href="/assets/WebErrorHandler-DN9FD6dC.js">
+    <link rel="modulepreload" crossorigin href="/assets/editorTaskQueue-DaJYoyfY.js">
+    <link rel="modulepreload" crossorigin href="/assets/color-D35PTX_O.js">
+    <link rel="stylesheet" crossorigin href="/assets/icon-BiQxDzg7.css">
+    <link rel="stylesheet" crossorigin href="/assets/i18n-CfIoKKuA.css">
+    <link rel="stylesheet" crossorigin href="/assets/LoginCn-iGCcGFb5.css">
+    <link rel="stylesheet" crossorigin href="/assets/AiCreditBenefitsTip-BlyHKjjZ.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-BVWcMAVp.css">
+  </head>
+  <body class="scrollbar-thin scrollbar-thumb-gray-950 scrollbar-thumb-rounded">
+    <div id="root"></div>
+  </body>
+</html>
