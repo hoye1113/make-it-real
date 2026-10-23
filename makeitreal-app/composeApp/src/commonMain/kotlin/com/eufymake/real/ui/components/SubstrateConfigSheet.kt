@@ -256,7 +256,23 @@ fun SubstrateConfigSheet(
                                         color = if (isSelected) BrandGreen else Color(0xFFE5E7EB),
                                         shape = RoundedCornerShape(12.dp)
                                     )
-                                    .clickable { selectedPreset = preset }
+                                    .clickable {
+                                        selectedPreset = preset
+                                        when (preset) {
+                                            "Acrylic Sheet" -> { width = "300"; height = "400"; thickness = "2"; selectedMaterial = "亚克力" }
+                                            "Wood Sheet" -> { width = "300"; height = "400"; thickness = "3"; selectedMaterial = "木材" }
+                                            "Metal Sheet" -> { width = "200"; height = "300"; thickness = "1"; selectedMaterial = "金属" }
+                                            "iPhone 16" -> { width = "72"; height = "148"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "iPhone 16 Plus" -> { width = "78"; height = "161"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "iPhone 16 Pro" -> { width = "72"; height = "150"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "iPhone 16 Pro Max" -> { width = "78"; height = "163"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "iPhone 17" -> { width = "72"; height = "149"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "iPhone 17 Pro" -> { width = "72"; height = "151"; thickness = "8"; selectedMaterial = "亚克力" }
+                                            "AirPods 4 Charging Case" -> { width = "50"; height = "46"; thickness = "21"; selectedMaterial = "PVC" }
+                                            "AirPods Pro 3 Charging Case" -> { width = "60"; height = "45"; thickness = "22"; selectedMaterial = "PVC" }
+                                            "Switch Joy-Con Controller" -> { width = "36"; height = "102"; thickness = "28"; selectedMaterial = "PVC" }
+                                        }
+                                    }
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
                                 Row(

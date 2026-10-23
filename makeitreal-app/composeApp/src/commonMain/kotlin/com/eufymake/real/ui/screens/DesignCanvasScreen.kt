@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
@@ -225,7 +227,7 @@ fun DesignCanvasScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
-                                Icons.Default.KeyboardArrowRight,
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = Color(0xFF8E8E93),
                                 modifier = Modifier.size(16.dp)
@@ -287,7 +289,7 @@ fun DesignCanvasScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.HelpOutline,
+                                    Icons.AutoMirrored.Filled.HelpOutline,
                                     contentDescription = "Help",
                                     tint = Color(0xFF1A1A1A),
                                     modifier = Modifier.size(20.dp)
@@ -732,6 +734,7 @@ private fun GizmoLayerItem(
                 width = (layer.widthMm * 2f).coerceAtLeast(50f).dp,
                 height = (layer.heightMm * 2f).coerceAtLeast(40f).dp
             )
+            .graphicsLayer { rotationZ = layer.rotationDegrees }
             .pointerInput(layer.id) {
                 detectDragGestures(
                     onDragStart = {
@@ -848,7 +851,10 @@ private fun GizmoLayerItem(
                     .clip(CircleShape)
                     .background(Color.White)
                     .border(1.dp, Color(0xFFCBD5E1), CircleShape)
-                    .clickable { },
+                    .clickable {
+                        val nextRotation = (layer.rotationDegrees + 90f) % 360f
+                        onUpdateLayerTransient(layer.copy(rotationDegrees = nextRotation))
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
