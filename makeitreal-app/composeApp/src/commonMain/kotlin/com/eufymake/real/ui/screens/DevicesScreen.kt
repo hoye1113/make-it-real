@@ -65,16 +65,6 @@ fun DevicesScreen(
                     )
 
                     val isOnline = deviceInfo.status != DeviceStatus.OFFLINE
-                    val pulseTransition = rememberInfiniteTransition(label = "wifiPulse")
-                    val pulseAlpha by pulseTransition.animateFloat(
-                        initialValue = 0.55f,
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(900, easing = FastOutSlowInEasing),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "pulseAlpha"
-                    )
 
                     Box(
                         modifier = Modifier
@@ -84,13 +74,7 @@ fun DevicesScreen(
                             .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .graphicsLayer { alpha = if (isOnline) pulseAlpha else 1f }
-                                    .clip(CircleShape)
-                                    .background(if (isOnline) Color(0xFF16A34A) else Color(0xFF94A3B8))
-                            )
+                            WifiStatusDot(isOnline = isOnline)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = if (isOnline) strings.device.wifiConnected else strings.device.statusOffline,
@@ -534,5 +518,35 @@ fun DevicesScreen(
                 onDismiss = { showMaintenanceDialog = false }
             )
         }
+    }
+}
+
+@Composable
+private fun WifiStatusDot(isOnline: Boolean) {
+    if (isOnline) {
+        val pulseTransition = rememberInfiniteTransition(label = "wifiPulse")
+        val pulseAlpha by pulseTransition.animateFloat(
+            initialValue = 0.55f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(900, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulseAlpha"
+        )
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .graphicsLayer { alpha = pulseAlpha }
+                .clip(CircleShape)
+                .background(Color(0xFF16A34A))
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF94A3B8))
+        )
     }
 }

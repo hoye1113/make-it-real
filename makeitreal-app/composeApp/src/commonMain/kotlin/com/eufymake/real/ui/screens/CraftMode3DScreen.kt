@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -110,6 +111,7 @@ fun CraftMode3DScreen(
     var showChokeHelpDialog by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+    var resetJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
     // Trigger texture generation when relief mode confirmed (smooth cinematic tween)
     LaunchedEffect(isGeneratingTexture) {
@@ -173,7 +175,9 @@ fun CraftMode3DScreen(
                     .fillMaxWidth()
                     .background(StudioDarkWorkspace)
                     .pointerInput(Unit) {
-                        detectDragGestures { change, dragAmount ->
+                        detectDragGestures(
+                            onDragStart = { resetJob?.cancel() }
+                        ) { change, dragAmount ->
                             change.consume()
                             dragYaw = (dragYaw + dragAmount.x * 0.35f).coerceIn(-50f, 50f)
                             dragPitch = (dragPitch - dragAmount.y * 0.35f).coerceIn(-25f, 25f)
@@ -246,7 +250,8 @@ fun CraftMode3DScreen(
                 IconButton(
                     onClick = {
                         if (dragPitch != 0f || dragYaw != 0f) {
-                            coroutineScope.launch {
+                            resetJob?.cancel()
+                            resetJob = coroutineScope.launch {
                                 val startPitch = dragPitch
                                 val startYaw = dragYaw
                                 androidx.compose.animation.core.animate(
@@ -265,6 +270,7 @@ fun CraftMode3DScreen(
                             }
                             isPerspectiveTilted = true
                         } else {
+                            resetJob?.cancel()
                             isPerspectiveTilted = !isPerspectiveTilted
                         }
                     },
@@ -989,6 +995,7 @@ private fun AppSliderRow(
     max: Float,
     onValueChange: (Float) -> Unit
 ) {
+    val strings = LocalStrings.current
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1003,15 +1010,21 @@ private fun AppSliderRow(
                     color = Color(0xFF1E293B)
                 )
                 if (hasHelpIcon) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        Icons.Default.HelpOutline,
-                        contentDescription = "Help",
-                        tint = Color(0xFF94A3B8),
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Box(
                         modifier = Modifier
-                            .size(14.dp)
-                            .clickable { onHelpClick?.invoke() }
-                    )
+                            .size(32.dp)
+                            .tactilePress()
+                            .clickable { onHelpClick?.invoke() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.HelpOutline,
+                            contentDescription = strings.craft.whiteChoke,
+                            tint = Color(0xFF94A3B8),
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
                 }
             }
 
