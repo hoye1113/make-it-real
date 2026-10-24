@@ -92,6 +92,7 @@ interface CraftStrings {
     val substrateSpec: String
     val view2D: String
     val view3D: String
+    val wireframe: String
     val aiPointsCost: String
     val doNotRemind: String
     val insufficientPointsBtn: String

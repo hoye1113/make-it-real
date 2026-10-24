@@ -2,6 +2,7 @@ package com.eufymake.real.ui.screens
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -29,6 +31,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -43,8 +46,12 @@ import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.theme.StudioDarkStatusBar
 import com.eufymake.real.ui.theme.StudioDarkTopBar
 import com.eufymake.real.ui.theme.StudioDarkWorkspace
+import com.eufymake.real.ui.util.SubstrateMaterials
+import com.eufymake.real.ui.util.bounceClick
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactilePress
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 enum class CraftType {
@@ -102,13 +109,18 @@ fun CraftMode3DScreen(
     var generationProgress by remember { mutableStateOf(0f) }
     var showChokeHelpDialog by remember { mutableStateOf(false) }
 
-    // Trigger texture generation when relief mode confirmed
+    val coroutineScope = rememberCoroutineScope()
+
+    // Trigger texture generation when relief mode confirmed (smooth cinematic tween)
     LaunchedEffect(isGeneratingTexture) {
         if (isGeneratingTexture) {
             generationProgress = 0f
-            while (generationProgress < 1f) {
-                delay(60)
-                generationProgress += 0.05f
+            androidx.compose.animation.core.animate(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 1400, easing = FastOutSlowInEasing)
+            ) { value, _ ->
+                generationProgress = value
             }
             isGeneratingTexture = false
         }
@@ -137,7 +149,7 @@ fun CraftMode3DScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = strings.common.back,
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
@@ -180,21 +192,22 @@ fun CraftMode3DScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color.Black.copy(alpha = 0.55f))
+                            .background(Color.Black.copy(alpha = 0.65f))
+                            .tactilePress()
                             .clickable {
                                 showSubstrateInfoDialog = true
                             }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .padding(horizontal = 14.dp, vertical = 7.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = draft.substrate.nameZh,
+                                text = draft.substrate.displayName,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White
                             )
-                            Spacer(modifier = Modifier.width(3.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 Icons.Default.KeyboardArrowDown,
                                 contentDescription = null,
@@ -204,30 +217,52 @@ fun CraftMode3DScreen(
                         }
                     }
 
-                    // Wireframe Toggle Icon (C-4: non-active tint uses dark slate for visibility)
+                    // Wireframe Toggle Icon (44dp touch target with 32dp visual capsule)
                     Box(
                         modifier = Modifier
-                            .size(30.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (showWireframe) BrandGreen else Color.White.copy(alpha = 0.92f))
+                            .size(44.dp)
+                            .tactilePress()
                             .clickable { showWireframe = !showWireframe },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.GridOn,
-                            contentDescription = "Wireframe",
-                            tint = if (showWireframe) Color.White else Color(0xFF1E293B),
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (showWireframe) BrandGreen else Color.White.copy(alpha = 0.92f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.GridOn,
+                                contentDescription = strings.craft.wireframe,
+                                tint = if (showWireframe) Color.White else Color(0xFF1E293B),
+                                modifier = Modifier.size(17.dp)
+                            )
+                        }
                     }
                 }
 
-                // Bottom-right 3D/2D perspective toggle & reticle button (Frame 0080)
+                // Bottom-right 3D/2D perspective toggle & reticle button (Frame 0080) with smooth spring reset
                 IconButton(
                     onClick = {
                         if (dragPitch != 0f || dragYaw != 0f) {
-                            dragPitch = 0f
-                            dragYaw = 0f
+                            coroutineScope.launch {
+                                val startPitch = dragPitch
+                                val startYaw = dragYaw
+                                androidx.compose.animation.core.animate(
+                                    initialValue = 0f,
+                                    targetValue = 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                ) { frac, _ ->
+                                    dragPitch = startPitch * (1f - frac)
+                                    dragYaw = startYaw * (1f - frac)
+                                }
+                                dragPitch = 0f
+                                dragYaw = 0f
+                            }
                             isPerspectiveTilted = true
                         } else {
                             isPerspectiveTilted = !isPerspectiveTilted
@@ -284,11 +319,12 @@ fun CraftMode3DScreen(
                         modifier = Modifier.offset(y = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Static ambient table drop shadow (stays level with viewport)
+                        // Reactive ambient table drop shadow (moves slightly with turntable yaw)
                         Box(
                             modifier = Modifier
                                 .size(210.dp, 22.dp)
-                                .offset(y = 115.dp)
+                                .offset { IntOffset(x = (-dragYaw * 1.5f).roundToInt(), y = 115.dp.roundToPx()) }
+                                .graphicsLayer { alpha = 0.45f - kotlin.math.abs(dragPitch) * 0.005f }
                                 .background(
                                     Brush.radialGradient(
                                         listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent)
@@ -296,117 +332,167 @@ fun CraftMode3DScreen(
                                 )
                         )
 
-                        // 3D Rotating Bed Container
+                        // 3D Rotating Bed Container with Physical Slab Depth & Authentic Substrate Material
                         Box(
                             modifier = Modifier
                                 .size(230.dp)
                                 .graphicsLayer {
                                     this.rotationX = animBaseX + dragPitch
-                                    this.rotationZ = animBaseZ + dragYaw
-                                    this.cameraDistance = 16f
-                                }
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color.White)
-                                .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(10.dp)),
+                                    this.rotationY = dragYaw
+                                    this.rotationZ = animBaseZ
+                                    this.cameraDistance = 10f
+                                },
                             contentAlignment = Alignment.Center
                         ) {
-                            // Real Artwork on 3D Bed with Embossed Lighting Treatment
-                            if (artworkBitmap != null) {
-                                val isCircular = draft.substrate.shape == SubstrateShape.CIRCLE ||
-                                                draft.substrate.id.contains("circle", ignoreCase = true) ||
-                                                draft.substrate.id.contains("clock", ignoreCase = true)
-                                val artShape = if (isCircular) CircleShape else RoundedCornerShape(8.dp)
+                            // Bottom slab physical depth (3mm thickness)
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .offset(y = 6.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(SubstrateMaterials.getSlabDepthColor(draft.substrate))
+                            )
 
-                                Box(
-                                    modifier = Modifier
-                                        .size(190.dp)
-                                        .shadow(elevation = (maxHeightMm * 3).dp, shape = artShape)
-                                        .clip(artShape)
-                                        .border(
-                                            width = if (selectedCraft != CraftType.FLAT) (maxHeightMm * 0.8f).coerceAtLeast(1.5f).dp else 0.5.dp,
-                                            brush = Brush.linearGradient(
-                                                listOf(
-                                                    Color.White.copy(alpha = 0.85f),
-                                                    Color.Black.copy(alpha = 0.55f)
-                                                )
+                            // Top bed surface with authentic material texture
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(SubstrateMaterials.getBrush(draft.substrate))
+                                    .border(1.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Real Artwork on 3D Bed with Embossed Lighting Treatment
+                                if (artworkBitmap != null) {
+                                    val isCircular = draft.substrate.shape == SubstrateShape.CIRCLE ||
+                                                    draft.substrate.shape == SubstrateShape.CYLINDER
+                                    val artShape = if (isCircular) CircleShape else RoundedCornerShape(8.dp)
+
+                                    Box(
+                                        modifier = Modifier
+                                            .size(190.dp)
+                                            .shadow(elevation = (maxHeightMm * 2.5f).dp, shape = artShape)
+                                            .clip(artShape)
+                                            .border(
+                                                width = if (selectedCraft != CraftType.FLAT) (maxHeightMm * 0.8f).coerceAtLeast(1.5f).dp else 0.5.dp,
+                                                brush = Brush.linearGradient(
+                                                    listOf(
+                                                        Color.White.copy(alpha = 0.85f),
+                                                        Color.Black.copy(alpha = 0.55f)
+                                                    )
+                                                ),
+                                                shape = artShape
                                             ),
-                                            shape = artShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Image(
-                                        bitmap = artworkBitmap,
-                                        contentDescription = "3D Artwork",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-
-                                    // Micro-relief texture overlay if RELIEF_TEXTURE active
-                                    if (selectedCraft == CraftType.RELIEF_TEXTURE) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(
-                                                    Brush.radialGradient(
-                                                        listOf(Color.White.copy(alpha = 0.25f), Color.Transparent)
-                                                    )
-                                                )
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Image(
+                                            bitmap = artworkBitmap,
+                                            contentDescription = "3D Artwork",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
                                         )
-                                    }
 
-                                    // Specular gloss sheen overlay with dynamic light sweep shimmer
-                                    if (selectedInkMode.isGloss) {
-                                        val infiniteTransition = rememberInfiniteTransition()
-                                        val sweepOffset by infiniteTransition.animateFloat(
-                                            initialValue = -250f,
-                                            targetValue = 650f,
-                                            animationSpec = infiniteRepeatable(
-                                                animation = tween(2800, easing = LinearEasing),
-                                                repeatMode = RepeatMode.Restart
+                                        // Dynamic 3D lighting reflection & relief bevel shading
+                                        Canvas(modifier = Modifier.matchParentSize().clip(artShape)) {
+                                            val gloss = selectedInkMode.isGloss
+                                            val reliefFactor = (maxHeightMm / 4f).coerceIn(0.2f, 1f)
+
+                                            // 1. Virtual light source fixed at upper-left; as dragYaw rotates, reflection moves across surface
+                                            val lightCenterX = size.width * (0.42f - dragYaw / 110f)
+                                            val lightCenterY = size.height * (0.35f - dragPitch / 110f)
+
+                                            drawRect(
+                                                brush = Brush.radialGradient(
+                                                    colors = listOf(
+                                                        Color.White.copy(alpha = if (gloss) 0.38f else 0.16f),
+                                                        Color.Transparent
+                                                    ),
+                                                    center = Offset(lightCenterX, lightCenterY),
+                                                    radius = size.minDimension * 0.72f
+                                                ),
+                                                blendMode = BlendMode.Screen
                                             )
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(
-                                                    Brush.linearGradient(
-                                                        colors = listOf(
-                                                            Color.White.copy(alpha = 0.05f),
-                                                            Color.White.copy(alpha = 0.45f),
-                                                            Color.White.copy(alpha = 0.05f)
-                                                        ),
-                                                        start = Offset(sweepOffset, sweepOffset),
-                                                        end = Offset(sweepOffset + 140f, sweepOffset + 140f)
-                                                    )
-                                                )
-                                        )
-                                    }
-                                }
-                            } else {
-                                // Fallback wireframe circular plate
-                                Box(
-                                    modifier = Modifier
-                                        .size(190.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF2E7D32)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("3D TACTILE", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                }
-                            }
 
-                            // Wireframe overlay: Authentic Toolpath/Slice N×N Grid
-                            if (showWireframe) {
-                                androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                                    val stepPx = size.width / 10f
-                                    val gridColor = Color(0xFF00C37A).copy(alpha = 0.45f)
-                                    for (i in 1 until 10) {
-                                        val pos = i * stepPx
-                                        drawLine(gridColor, Offset(pos, 0f), Offset(pos, size.height), strokeWidth = 1f)
-                                        drawLine(gridColor, Offset(0f, pos), Offset(size.width, pos), strokeWidth = 1f)
+                                            // 2. Bevel shading (Upper edge highlight, lower edge ambient occlusion)
+                                            drawRect(
+                                                brush = Brush.verticalGradient(
+                                                    0.00f to Color.White.copy(alpha = 0.22f * reliefFactor),
+                                                    0.12f to Color.Transparent,
+                                                    0.85f to Color.Transparent,
+                                                    1.00f to Color.Black.copy(alpha = 0.26f * reliefFactor)
+                                                ),
+                                                blendMode = BlendMode.Overlay
+                                            )
+                                        }
+
+                                        // Micro-relief texture overlay if RELIEF_TEXTURE active
+                                        if (selectedCraft == CraftType.RELIEF_TEXTURE) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(
+                                                        Brush.radialGradient(
+                                                            listOf(Color.White.copy(alpha = 0.25f), Color.Transparent)
+                                                        )
+                                                    )
+                                            )
+                                        }
+
+                                        // Specular gloss sheen overlay with dynamic light sweep shimmer
+                                        if (selectedInkMode.isGloss) {
+                                            val infiniteTransition = rememberInfiniteTransition(label = "glossSweep")
+                                            val sweepOffset by infiniteTransition.animateFloat(
+                                                initialValue = -250f,
+                                                targetValue = 650f,
+                                                animationSpec = infiniteRepeatable(
+                                                    animation = tween(2800, easing = LinearEasing),
+                                                    repeatMode = RepeatMode.Restart
+                                                ),
+                                                label = "sweepOffset"
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(
+                                                        Brush.linearGradient(
+                                                            colors = listOf(
+                                                                Color.White.copy(alpha = 0.05f),
+                                                                Color.White.copy(alpha = 0.45f),
+                                                                Color.White.copy(alpha = 0.05f)
+                                                            ),
+                                                            start = Offset(sweepOffset, sweepOffset),
+                                                            end = Offset(sweepOffset + 140f, sweepOffset + 140f)
+                                                        )
+                                                    )
+                                            )
+                                        }
                                     }
-                                    drawLine(gridColor.copy(alpha = 0.25f), Offset(0f, 0f), Offset(size.width, size.height), strokeWidth = 1f)
-                                    drawLine(gridColor.copy(alpha = 0.25f), Offset(size.width, 0f), Offset(0f, size.height), strokeWidth = 1f)
+                                } else {
+                                    // Fallback wireframe circular plate
+                                    Box(
+                                        modifier = Modifier
+                                            .size(190.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF2E7D32)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("3D TACTILE", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                }
+
+                                // Wireframe overlay: Authentic Toolpath/Slice N×N Grid
+                                if (showWireframe) {
+                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                        val stepPx = size.width / 10f
+                                        val gridColor = Color(0xFF00C37A).copy(alpha = 0.45f)
+                                        for (i in 1 until 10) {
+                                            val pos = i * stepPx
+                                            drawLine(gridColor, Offset(pos, 0f), Offset(pos, size.height), strokeWidth = 1f)
+                                            drawLine(gridColor, Offset(0f, pos), Offset(size.width, pos), strokeWidth = 1f)
+                                        }
+                                        drawLine(gridColor.copy(alpha = 0.25f), Offset(0f, 0f), Offset(size.width, size.height), strokeWidth = 1f)
+                                        drawLine(gridColor.copy(alpha = 0.25f), Offset(size.width, 0f), Offset(0f, size.height), strokeWidth = 1f)
+                                    }
                                 }
                             }
                         }

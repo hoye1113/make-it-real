@@ -84,6 +84,7 @@ object EnStrings : AppStrings {
         override val substrateSpec = "Substrate Craft Specifications"
         override val view2D = "2D Top View"
         override val view3D = "3D Perspective"
+        override val wireframe = "Wireframe Grid"
         override val aiPointsCost = "This feature consumes 5 AI credits."
         override val doNotRemind = "Don't show again"
         override val insufficientPointsBtn = "Insufficient Credits"

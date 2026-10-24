@@ -84,6 +84,7 @@ object ZhStrings : AppStrings {
         override val substrateSpec = "基材工艺参数规范"
         override val view2D = "2D俯视视角"
         override val view3D = "3D透视视角"
+        override val wireframe = "线框切片"
         override val aiPointsCost = "此功能将消耗 5 点 AI 算力点数。"
         override val doNotRemind = "下次不再提醒"
         override val insufficientPointsBtn = "点数不足"

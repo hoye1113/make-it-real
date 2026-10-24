@@ -34,6 +34,7 @@ import com.eufymake.real.ui.components.SubstrateConfigSheet
 import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactilePress
 
 data class InspirationCardMeta(
     val title: String,
@@ -67,21 +68,25 @@ fun CreateScreen(
         strings.community.catArtistDaily
     )
 
-    val allInspirationItems = listOf(
-        InspirationCardMeta("Wedding Hand-drawn Commemorative", "Sean", 1530, "work_1.webp", "sheet", 3),
-        InspirationCardMeta("Bridesmaid Invitation Card", "Katniss_e", 724, "work_2.webp", "card", 3),
-        InspirationCardMeta("Horror Cons 6x8 Canvas", "Jayleecustoms", 1089, "work_3.webp", "canvas", 1),
-        InspirationCardMeta("Dancer Wax Seal Tactile Stamp", "Katniss_e", 412, "work_4.webp", "coaster", 1),
-        InspirationCardMeta("Octopus Deep Ocean 3D Mug", "AlexMaker", 890, "work_5.webp", "cup", 1),
-        InspirationCardMeta("Stained Glass Prism Magnet", "GothicArt", 610, "work_6.webp", "magnet", 4),
-        InspirationCardMeta("Moonlight Witch Ornament Skill", "WhiskersDesign", 1205, "Moonlight Witch Ornament Skill.webp", "coaster", 2),
-        InspirationCardMeta("Floral Halloween Skeleton Relief", "Katniss_e", 842, "Floral Halloween Skeleton Skill.webp", "sheet", 4)
-    )
+    val allInspirationItems = remember {
+        listOf(
+            InspirationCardMeta("Wedding Hand-drawn Commemorative", "Sean", 1530, "work_1.webp", "sheet", 3),
+            InspirationCardMeta("Bridesmaid Invitation Card", "Katniss_e", 724, "work_2.webp", "card", 3),
+            InspirationCardMeta("Horror Cons 6x8 Canvas", "Jayleecustoms", 1089, "work_3.webp", "canvas", 1),
+            InspirationCardMeta("Dancer Wax Seal Tactile Stamp", "Katniss_e", 412, "work_4.webp", "coaster", 1),
+            InspirationCardMeta("Octopus Deep Ocean 3D Mug", "AlexMaker", 890, "work_5.webp", "cup", 1),
+            InspirationCardMeta("Stained Glass Prism Magnet", "GothicArt", 610, "work_6.webp", "magnet", 4),
+            InspirationCardMeta("Moonlight Witch Ornament Skill", "WhiskersDesign", 1205, "Moonlight Witch Ornament Skill.webp", "coaster", 2),
+            InspirationCardMeta("Floral Halloween Skeleton Relief", "Katniss_e", 842, "Floral Halloween Skeleton Skill.webp", "sheet", 4)
+        )
+    }
 
-    val displayedItems = if (selectedFilterIndex == 0) {
-        allInspirationItems
-    } else {
-        allInspirationItems.filter { it.categoryIndex == selectedFilterIndex }
+    val displayedItems = remember(selectedFilterIndex, allInspirationItems) {
+        if (selectedFilterIndex == 0) {
+            allInspirationItems
+        } else {
+            allInspirationItems.filter { it.categoryIndex == selectedFilterIndex }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF7F8FA))) {
@@ -110,8 +115,9 @@ fun CreateScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
                             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
+                            .tactilePress()
                             .clickable(onClick = onOpenDevices)
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(

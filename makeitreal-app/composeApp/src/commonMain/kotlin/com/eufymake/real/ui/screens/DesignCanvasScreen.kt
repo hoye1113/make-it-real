@@ -1,90 +1,52 @@
 package com.eufymake.real.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.lazy.LazyRow
-
-import androidx.compose.ui.layout.ContentScale
-
-import com.eufymake.real.ui.util.rememberAppImage
-
 import androidx.compose.foundation.Canvas
-
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-
 import androidx.compose.foundation.border
-
 import androidx.compose.foundation.clickable
-
 import androidx.compose.foundation.gestures.detectDragGestures
-
-import androidx.compose.foundation.layout.*
-
 import androidx.compose.foundation.interaction.MutableInteractionSource
-
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
-
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-
 import androidx.compose.material.icons.automirrored.filled.Redo
-
 import androidx.compose.material.icons.automirrored.filled.Undo
-
 import androidx.compose.material.icons.filled.*
-
 import androidx.compose.material3.*
-
 import androidx.compose.runtime.*
-
 import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
-
 import androidx.compose.ui.draw.clip
-
 import androidx.compose.ui.geometry.Offset
-
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.graphics.PathEffect
-
 import androidx.compose.ui.graphics.drawscope.Stroke
-
 import androidx.compose.ui.graphics.graphicsLayer
-
 import androidx.compose.ui.input.pointer.pointerInput
-
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-
 import androidx.compose.ui.text.style.TextAlign
-
 import androidx.compose.ui.unit.IntOffset
-
 import androidx.compose.ui.unit.dp
-
 import androidx.compose.ui.unit.sp
-
-import com.eufymake.real.model.*
-
-import com.eufymake.real.ui.components.*
-
-import com.eufymake.real.ui.theme.BrandBlack
-
-import com.eufymake.real.ui.theme.BrandGreen
-
 import com.eufymake.real.i18n.LocalStrings
-
+import com.eufymake.real.model.*
+import com.eufymake.real.ui.components.*
+import com.eufymake.real.ui.theme.BrandBlack
+import com.eufymake.real.ui.theme.BrandGreen
+import com.eufymake.real.ui.util.bounceClick
+import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactilePress
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-
 fun DesignCanvasScreen(
 
     draft: Draft,
@@ -194,67 +156,45 @@ fun DesignCanvasScreen(
                     }
 
                     // Center Dropdown Pill: "标准 摄像头对齐 v"
-
                     Box(
-
                         modifier = Modifier
-
                             .clip(RoundedCornerShape(16.dp))
-
                             .background(Color(0xFFF2F3F5))
-
-                            .clickable { }
-
+                            .clickable {
+                                toastMessage = strings.canvas.cameraAligned
+                            }
                             .padding(horizontal = 12.dp, vertical = 6.dp)
-
                     ) {
-
                         Row(verticalAlignment = Alignment.CenterVertically) {
-
                             Text(
-
                                 text = strings.canvas.cameraAligned,
-
                                 fontSize = 12.sp,
-
                                 fontWeight = FontWeight.SemiBold,
-
                                 color = Color(0xFF1A1A1A)
-
                             )
-
                             Spacer(modifier = Modifier.width(4.dp))
-
                             Icon(
-
                                 Icons.Default.KeyboardArrowDown,
-
                                 contentDescription = null,
-
                                 tint = Color(0xFF8E8E93),
-
                                 modifier = Modifier.size(16.dp)
-
                             )
-
                         }
-
                     }
 
-                    // Right Viewfinder / Camera align icon [o]
-
-                    IconButton(onClick = { }, modifier = Modifier.size(36.dp)) {
-
+                    // Right Viewfinder / Camera align icon [o] with proper 44dp touch target
+                    IconButton(
+                        onClick = {
+                            toastMessage = strings.canvas.cameraAligned
+                        },
+                        modifier = Modifier.size(44.dp)
+                    ) {
                         Icon(
-
                             Icons.Default.CropFree,
-
-                            contentDescription = "Viewfinder Align",
-
-                            tint = Color(0xFF1A1A1A)
-
+                            contentDescription = strings.canvas.cameraAligned,
+                            tint = Color(0xFF1A1A1A),
+                            modifier = Modifier.size(22.dp)
                         )
-
                     }
 
                 }
@@ -384,80 +324,50 @@ fun DesignCanvasScreen(
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = 2
+                            ) {
                                 Button(
-
                                     onClick = { showUploadDrawer = true },
-
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1A1A)),
-
                                     shape = RoundedCornerShape(12.dp),
-
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-
-                                    modifier = Modifier.height(34.dp)
-
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.height(42.dp).tactilePress()
                                 ) {
-
-                                    Text(strings.canvas.uploadPhoto, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-
+                                    Text(strings.canvas.uploadPhoto, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
 
                                 Button(
-
                                     onClick = { showTextDialog = true },
-
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F5)),
-
                                     shape = RoundedCornerShape(12.dp),
-
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-
-                                    modifier = Modifier.height(34.dp)
-
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.height(42.dp).tactilePress()
                                 ) {
-
-                                    Text(strings.canvas.addText, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
-
+                                    Text(strings.canvas.addText, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
                                 }
 
                                 Button(
-
                                     onClick = { showElementsDrawer = true },
-
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F5)),
-
                                     shape = RoundedCornerShape(12.dp),
-
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-
-                                    modifier = Modifier.height(34.dp)
-
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.height(42.dp).tactilePress()
                                 ) {
-
-                                    Text(strings.canvas.stickers, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
-
+                                    Text(strings.canvas.stickers, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
                                 }
 
                                 Button(
-
                                     onClick = { showAIDialog = true },
-
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF2F3F5)),
-
                                     shape = RoundedCornerShape(12.dp),
-
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-
-                                    modifier = Modifier.height(34.dp)
-
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.height(42.dp).tactilePress()
                                 ) {
-
-                                    Text(strings.canvas.aiEmboss, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
-
+                                    Text(strings.canvas.aiEmboss, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
                                 }
-
                             }
 
                         }
@@ -483,69 +393,45 @@ fun DesignCanvasScreen(
                             .background(Color.White)
 
                             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(20.dp))
-
-                            .padding(horizontal = 14.dp, vertical = 6.dp)
-
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
-
                         Row(
-
                             verticalAlignment = Alignment.CenterVertically,
-
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-
-                            Icon(
-
-                                Icons.Default.DeleteOutline,
-
-                                contentDescription = "Delete",
-
-                                tint = Color(0xFF1A1A1A),
-
-                                modifier = Modifier
-
-                                    .size(20.dp)
-
-                                    .clickable {
-
-                                        onRemoveLayer(selectedLayer.id)
-
-                                        selectedLayerId = null
-
-                                    }
-
-                            )
+                            IconButton(
+                                onClick = {
+                                    onRemoveLayer(selectedLayer.id)
+                                    selectedLayerId = null
+                                },
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.DeleteOutline,
+                                    contentDescription = strings.common.delete,
+                                    tint = Color(0xFF1A1A1A),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
 
                             Box(
-
                                 modifier = Modifier
-
                                     .width(1.dp)
-
                                     .height(14.dp)
-
                                     .background(Color(0xFFE5E7EB))
-
                             )
 
-                            Icon(
-
-                                Icons.Default.MoreVert,
-
-                                contentDescription = "More",
-
-                                tint = Color(0xFF1A1A1A),
-
-                                modifier = Modifier
-
-                                    .size(20.dp)
-
-                                    .clickable { showLayersSheet = true }
-
-                            )
-
+                            IconButton(
+                                onClick = { showLayersSheet = true },
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.MoreVert,
+                                    contentDescription = strings.canvas.layers,
+                                    tint = Color(0xFF1A1A1A),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
 
                     }
@@ -553,23 +439,15 @@ fun DesignCanvasScreen(
                     // Floating Craft Recipe Pill on Canvas bottom-right (Frame 0056): "平面 白墨->CMYK->光油 >"
 
                     Box(
-
                         modifier = Modifier
-
                             .align(Alignment.BottomEnd)
-
                             .padding(end = 16.dp, bottom = 16.dp)
-
                             .clip(RoundedCornerShape(16.dp))
-
                             .background(Color.White)
-
                             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
-
+                            .tactilePress()
                             .clickable { onNavigateToCraftMode() }
-
                             .padding(horizontal = 12.dp, vertical = 6.dp)
-
                     ) {
 
                         Row(verticalAlignment = Alignment.CenterVertically) {

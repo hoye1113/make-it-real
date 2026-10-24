@@ -1,5 +1,6 @@
 package com.eufymake.real.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +28,7 @@ import com.eufymake.real.ui.components.MaintenanceDialog
 import com.eufymake.real.ui.theme.BrandAccent
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.theme.BrandPrimary
+import com.eufymake.real.ui.util.tactilePress
 
 @Composable
 fun DevicesScreen(
@@ -61,25 +64,39 @@ fun DevicesScreen(
                         color = BrandPrimary
                     )
 
+                    val isOnline = deviceInfo.status != DeviceStatus.OFFLINE
+                    val pulseTransition = rememberInfiniteTransition(label = "wifiPulse")
+                    val pulseAlpha by pulseTransition.animateFloat(
+                        initialValue = 0.55f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(900, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "pulseAlpha"
+                    )
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFFDCFCE7))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .background(if (isOnline) Color(0xFFDCFCE7) else Color(0xFFF1F5F9))
+                            .tactilePress()
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
                                     .size(8.dp)
+                                    .graphicsLayer { alpha = if (isOnline) pulseAlpha else 1f }
                                     .clip(CircleShape)
-                                    .background(Color(0xFF16A34A))
+                                    .background(if (isOnline) Color(0xFF16A34A) else Color(0xFF94A3B8))
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = strings.device.wifiConnected,
+                                text = if (isOnline) strings.device.wifiConnected else strings.device.statusOffline,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF15803D)
+                                color = if (isOnline) Color(0xFF15803D) else Color(0xFF64748B)
                             )
                         }
                     }
