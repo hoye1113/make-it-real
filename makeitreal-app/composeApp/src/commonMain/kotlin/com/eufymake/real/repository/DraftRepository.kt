@@ -23,6 +23,8 @@ interface DraftRepository {
     fun updateLayer(layer: CanvasLayer)
     fun removeLayer(layerId: String)
     fun deleteDraft(draftId: String)
+    fun renameDraft(draftId: String, newTitle: String)
+    fun duplicateDraft(draftId: String): Draft?
 }
 
 class MockDraftRepository : DraftRepository {
@@ -205,6 +207,26 @@ class MockDraftRepository : DraftRepository {
         if (_currentDraft.value?.id == draftId) {
             _currentDraft.value = null
         }
+    }
+
+    override fun renameDraft(draftId: String, newTitle: String) {
+        _drafts.value = _drafts.value.map {
+            if (it.id == draftId) it.copy(title = newTitle, updatedAt = System.currentTimeMillis()) else it
+        }
+        if (_currentDraft.value?.id == draftId) {
+            _currentDraft.value = _currentDraft.value?.copy(title = newTitle, updatedAt = System.currentTimeMillis())
+        }
+    }
+
+    override fun duplicateDraft(draftId: String): Draft? {
+        val target = _drafts.value.firstOrNull { it.id == draftId } ?: return null
+        val copy = target.copy(
+            id = "draft_${System.currentTimeMillis()}",
+            title = "${target.title} (副本)",
+            updatedAt = System.currentTimeMillis()
+        )
+        _drafts.value = listOf(copy) + _drafts.value
+        return copy
     }
 
     private fun updateDraftInList(draft: Draft) {

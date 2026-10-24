@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
@@ -18,8 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.eufymake.real.model.Draft
 import com.eufymake.real.model.PointsState
 import com.eufymake.real.ui.theme.BrandGreen
@@ -30,9 +33,16 @@ fun ProfileScreen(
     drafts: List<Draft>,
     onOpenPointsMall: () -> Unit,
     onResumeDraft: (Draft) -> Unit,
-    onDeleteDraft: (String) -> Unit
+    onDeleteDraft: (String) -> Unit,
+    onRenameDraft: (String, String) -> Unit = { _, _ -> },
+    onDuplicateDraft: (String) -> Unit = {},
+    onOpenAcademy: () -> Unit = {},
+    onOpenActivities: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(0) }
+    var selectedDraftForOptions by remember { mutableStateOf<Draft?>(null) }
+    var draftToRename by remember { mutableStateOf<Draft?>(null) }
+    var renameInputText by remember { mutableStateOf("") }
     var draftToDelete by remember { mutableStateOf<Draft?>(null) }
     val tabs = listOf("创建", "已发布", "点赞", "收藏")
 
@@ -121,7 +131,7 @@ fun ProfileScreen(
                                 .weight(1f)
                                 .height(50.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .clickable { },
+                                .clickable(onClick = onOpenAcademy),
                             color = Color.White,
                             shadowElevation = 1.dp
                         ) {
@@ -146,7 +156,7 @@ fun ProfileScreen(
                                 .weight(1f)
                                 .height(50.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .clickable { },
+                                .clickable(onClick = onOpenActivities),
                             color = Color.White,
                             shadowElevation = 1.dp
                         ) {
@@ -254,9 +264,9 @@ fun ProfileScreen(
                                                     )
                                                 }
 
-                                                // Top-right 3-dot menu (Safe confirmation trigger)
+                                                // Top-right 3-dot menu (Draft Management Trigger)
                                                 IconButton(
-                                                    onClick = { draftToDelete = draft },
+                                                    onClick = { selectedDraftForOptions = draft },
                                                     modifier = Modifier.align(Alignment.TopEnd).size(32.dp)
                                                 ) {
                                                     Icon(
@@ -295,6 +305,193 @@ fun ProfileScreen(
                     }
                 }
             }
+        }
+
+        // Draft Options Bottom Sheet Dialog
+        selectedDraftForOptions?.let { draft ->
+            Dialog(
+                onDismissRequest = { selectedDraftForOptions = null },
+                properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                        color = Color.White,
+                        shadowElevation = 16.dp
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 14.dp)
+                        ) {
+                            // Top drag handle pill
+                            Box(
+                                modifier = Modifier
+                                    .padding(bottom = 12.dp)
+                                    .size(width = 36.dp, height = 4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(Color(0xFFCBD5E1))
+                                    .align(Alignment.CenterHorizontally)
+                            )
+
+                            Text(
+                                text = draft.title,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1A1A1A),
+                                maxLines = 1,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            // Option 1: Rename
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        draftToRename = draft
+                                        renameInputText = draft.title
+                                        selectedDraftForOptions = null
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("重命名草稿", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                            }
+
+                            // Option 2: Duplicate
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        onDuplicateDraft(draft.id)
+                                        selectedDraftForOptions = null
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("创建副本", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                            }
+
+                            // Option 3: Delete
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        draftToDelete = draft
+                                        selectedDraftForOptions = null
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("删除草稿", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFFDC2626))
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // Cancel Button
+                            Button(
+                                onClick = { selectedDraftForOptions = null },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF1F5F9)),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(42.dp)
+                            ) {
+                                Text("取消", color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Rename Draft Dialog
+        draftToRename?.let { targetDraft ->
+            AlertDialog(
+                onDismissRequest = { draftToRename = null },
+                title = {
+                    Text(
+                        text = "重命名草稿",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A1A)
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "请输入新的草稿名称：",
+                            fontSize = 13.sp,
+                            color = Color(0xFF64748B)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFF7F8FA))
+                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = renameInputText,
+                                onValueChange = { renameInputText = it },
+                                singleLine = true,
+                                textStyle = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF1A1A1A)
+                                ),
+                                cursorBrush = androidx.compose.ui.graphics.SolidColor(BrandGreen),
+                                decorationBox = { innerTextField ->
+                                    if (renameInputText.isEmpty()) {
+                                        Text("请输入名称", color = Color(0xFF94A3B8), fontSize = 14.sp)
+                                    }
+                                    innerTextField()
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (renameInputText.isNotBlank()) {
+                                onRenameDraft(targetDraft.id, renameInputText.trim())
+                            }
+                            draftToRename = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("保存", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { draftToRename = null },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("取消", color = Color(0xFF1A1A1A))
+                    }
+                },
+                shape = RoundedCornerShape(20.dp),
+                containerColor = Color.White
+            )
         }
 
         // Secondary Confirmation Dialog for Deletion (Prevents accidental data loss)

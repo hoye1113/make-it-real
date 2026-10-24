@@ -69,3 +69,125 @@ data class CheckInResponse(
     val consecutiveDays: Int,
     val pointsAwarded: Int = 15
 )
+
+// 1. 评论模型
+@Serializable
+data class CommentDto(
+    val id: String,
+    val projectId: String,
+    val authorId: String,
+    val authorName: String,
+    val authorAvatarUrl: String = "",
+    val content: String,
+    val createdAt: Long = System.currentTimeMillis(),
+    val likesCount: Int = 0,
+    val isLiked: Boolean = false
+)
+
+@Serializable
+data class AddCommentRequest(val content: String)
+
+// 2. 创作者名片模型
+@Serializable
+data class CreatorProfileDto(
+    val creatorId: String,
+    val name: String,
+    val handle: String,
+    val bio: String,
+    val avatarUrl: String = "",
+    val bannerUrl: String = "",
+    val isVerified: Boolean = false,
+    val verifiedTitle: String = "官方认证创作者",
+    val followingCount: Int = 0,
+    val followersCount: Int = 0,
+    val totalLikesCount: Int = 0,
+    val isFollowing: Boolean = false
+)
+
+@Serializable
+data class ToggleFollowResponse(
+    val creatorId: String,
+    val isFollowing: Boolean,
+    val newFollowerCount: Int
+)
+
+// 3. 工艺学院教程模型
+@Serializable
+data class AcademyCourseDto(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val difficulty: String = "入门",
+    val durationMinutes: Int = 5,
+    val coverImageName: String = "",
+    val tags: List<String> = emptyList(),
+    val sampleDraftSubstrateId: String = "sheet",
+    val keyParametersHint: String = "白墨内缩: 0.2mm, 浮雕高度: 2.2mm"
+)
+
+// 4. 赛事活动模型
+@Serializable
+data class ActivityDto(
+    val id: String,
+    val title: String,
+    val description: String,
+    val bannerImageName: String,
+    val prizePoolDesc: String,
+    val deadlineTimestamp: Long,
+    val submissionCount: Int,
+    val tags: List<String> = emptyList()
+)
+
+@Serializable
+data class SubmitActivityEntryRequest(
+    val activityId: String,
+    val projectId: String,
+    val craftNotes: String
+)
+
+// 5. 贴纸分类与资产模型
+@Serializable
+data class StickerPackDto(
+    val packId: String,
+    val title: String,
+    val iconName: String,
+    val stickersCount: Int
+)
+
+@Serializable
+data class StickerItemDto(
+    val id: String,
+    val name: String,
+    val packId: String,
+    val assetUrl: String,
+    val defaultReliefDepth: Float = 1.8f
+)
+
+// 6. 硬件设备耗材与维护模型
+@Serializable
+data class InkLevelsDto(
+    val cyanPercent: Int = 92,
+    val magentaPercent: Int = 85,
+    val yellowPercent: Int = 78,
+    val blackPercent: Int = 88,
+    val whitePercent: Int = 64,       // 白墨关键耗材
+    val varnishPercent: Int = 70,     // 光油耗材
+    val wasteTankPercent: Int = 18    // 废墨箱容量
+)
+
+@Serializable
+data class MaintenanceRequest(
+    val actionType: String // "NOZZLE_CLEAN", "INK_PURGE", "TEST_PRINT"
+)
+
+// 7. 消息通知模型
+@Serializable
+data class NotificationDto(
+    val id: String,
+    val type: String, // "LIKE", "COMMENT", "SYSTEM", "CONTEST"
+    val title: String,
+    val content: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false,
+    val jumpRoute: String = ""
+)

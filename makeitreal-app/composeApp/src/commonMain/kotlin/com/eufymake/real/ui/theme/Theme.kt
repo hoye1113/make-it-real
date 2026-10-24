@@ -22,6 +22,13 @@ val BrandDarkCard = Color(0xFF2C2C2E)     // 3D Craft Mode studio backdrop
 val BrandOrange = Color(0xFFFF7A00)       // Attention / badges
 val BrandGold = Color(0xFFF59E0B)
 
+// Unified Studio Dark Design Tokens
+val StudioDarkStatusBar = Color(0xFF1A1A1A)
+val StudioDarkTopBar = Color(0xFF1E2024)
+val StudioDarkWorkspace = Color(0xFF25262A)
+val StudioDarkBottomBar = Color(0xFF1A1A1A)
+val StudioDarkCard = Color(0xFF202226)
+
 val SurfaceLight = Color(0xFFFFFFFF)
 val BackgroundLight = Color(0xFFF7F8FA)    // Soft clean workspace neutral
 val BorderLight = Color(0xFFEEEEEE)

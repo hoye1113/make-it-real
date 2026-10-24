@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -49,19 +50,36 @@ fun SubstrateConfigSheet(
         Color(0xFFCBD5E1)  // Brushed aluminum
     )
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.92f)
-                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 24.dp, bottomEnd = 24.dp)),
-            color = Color.White
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Column(
+            Surface(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.92f),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = Color.White,
+                shadowElevation = 16.dp
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                ) {
+                    // Mobile Bottom Sheet Drag Handle Bar
+                    Box(
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .size(width = 38.dp, height = 4.5.dp)
+                            .clip(RoundedCornerShape(2.5.dp))
+                            .background(Color(0xFFCBD5E1))
+                            .align(Alignment.CenterHorizontally)
+                    )
                 // Top Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -333,6 +351,7 @@ fun SubstrateConfigSheet(
         }
     }
 }
+}
 
 @Composable
 private fun DimensionInputBox(
@@ -368,22 +387,25 @@ private fun DimensionInputBox(
                     color = Color(0xFF64748B)
                 )
             } else {
-                OutlinedTextField(
+                BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
-                    ),
                     textStyle = androidx.compose.ui.text.TextStyle(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         color = Color(0xFF1A1A1A)
                     ),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(Color(0xFF2E7D32)),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            innerTextField()
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

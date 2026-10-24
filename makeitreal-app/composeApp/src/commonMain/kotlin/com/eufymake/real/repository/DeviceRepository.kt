@@ -3,6 +3,8 @@ package com.eufymake.real.repository
 import com.eufymake.real.model.DeviceInfo
 import com.eufymake.real.model.DeviceStatus
 import com.eufymake.real.model.Draft
+import com.eufymake.real.model.GlossMode
+import com.eufymake.real.model.PrintMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,7 +19,12 @@ interface DeviceRepository {
     val deviceInfo: StateFlow<DeviceInfo>
     fun toggleChamberLight()
     fun toggleAirFiltration()
-    fun startPrintJob(draft: Draft)
+    fun startPrintJob(
+        draft: Draft,
+        mode: PrintMode = PrintMode.RELIEF_3D,
+        reliefDepthMm: Float = 2.0f,
+        glossMode: GlossMode = GlossMode.SPOT_GLOSS
+    )
     fun cancelPrintJob()
 }
 
@@ -40,11 +47,24 @@ class MockDeviceRepository : DeviceRepository {
         )
     }
 
-    override fun startPrintJob(draft: Draft) {
+    override fun startPrintJob(draft: Draft, mode: PrintMode, reliefDepthMm: Float, glossMode: GlossMode) {
         printJob?.cancel()
+        val modeZh = when (mode) {
+            PrintMode.RELIEF_3D -> "3D立体浮雕"
+            PrintMode.COLOR_AND_WHITE -> "白墨内缩全彩"
+            PrintMode.COLOR_ONLY -> "标准单层彩印"
+            PrintMode.WHITE_ONLY -> "纯白墨底衬"
+        }
+        val glossZh = when (glossMode) {
+            GlossMode.SPOT_GLOSS -> "局部触感光油"
+            GlossMode.FULL_GLOSS -> "全幅流平光油"
+            GlossMode.MATTE_VARNISH -> "哑光耐磨保护"
+            GlossMode.NONE -> "无光油"
+        }
+        val detailedJobTitle = "${draft.title} · $modeZh (${reliefDepthMm}mm) · $glossZh"
         _deviceInfo.value = _deviceInfo.value.copy(
             status = DeviceStatus.PREPARING,
-            currentJobName = draft.title,
+            currentJobName = detailedJobTitle,
             currentJobProgress = 0f,
             timeRemainingSeconds = 45
         )

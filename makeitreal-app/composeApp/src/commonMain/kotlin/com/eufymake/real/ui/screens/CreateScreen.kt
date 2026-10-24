@@ -1,5 +1,6 @@
 package com.eufymake.real.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,16 @@ import com.eufymake.real.model.Substrate
 import com.eufymake.real.ui.components.SubstrateConfigSheet
 import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
+import com.eufymake.real.ui.util.rememberAppImage
+
+data class InspirationCardMeta(
+    val title: String,
+    val author: String,
+    val likes: Int,
+    val imageName: String,
+    val substrateId: String,
+    val category: String
+)
 
 @Composable
 fun CreateScreen(
@@ -37,21 +49,33 @@ fun CreateScreen(
     onOpenPointsMall: () -> Unit,
     onSelectSubstrate: (Substrate) -> Unit,
     onOpenDrafts: () -> Unit,
-    onSelectInspirationItem: ((String) -> Unit)? = null
+    onSelectInspirationItem: ((title: String, imageName: String, substrateId: String) -> Unit)? = null,
+    deviceName: String = "E1 UV-50",
+    isDeviceConnected: Boolean = true,
+    onOpenDevices: () -> Unit = {}
 ) {
     var substrateToConfigure by remember { mutableStateOf<Substrate?>(null) }
     var selectedFilterIndex by remember { mutableStateOf(0) }
 
     val filterPills = listOf("全部", "3D纹理", "节日快乐", "个性化礼物", "艺术家日常")
 
-    val inspirationItems = listOf(
-        Triple("Wedding hand-drawn commemor...", "Sean", 48) to Color(0xFFD4A373),
-        Triple("Bridesmaid invitation card", "Katniss_e", 32) to Color(0xFFDDA15E),
-        Triple("Horror Cons 6x8 canvas", "Jayleecustoms", 27) to Color(0xFFBC6C25),
-        Triple("Dancer wax seal", "Katniss_e", 56) to Color(0xFF9B2226),
-        Triple("Octopus Halloween 3D", "AlexMaker", 64) to Color(0xFF6B2D5C),
-        Triple("Stained glass bat", "GothicArt", 81) to Color(0xFF4A4E69)
+    val allInspirationItems = listOf(
+        InspirationCardMeta("Wedding Hand-drawn Commemorative", "Sean", 1530, "work_1.webp", "sheet", "个性化礼物"),
+        InspirationCardMeta("Bridesmaid Invitation Card", "Katniss_e", 724, "work_2.webp", "card", "个性化礼物"),
+        InspirationCardMeta("Horror Cons 6x8 Canvas", "Jayleecustoms", 1089, "work_3.webp", "canvas", "3D纹理"),
+        InspirationCardMeta("Dancer Wax Seal Tactile Stamp", "Katniss_e", 412, "work_4.webp", "coaster", "3D纹理"),
+        InspirationCardMeta("Octopus Deep Ocean 3D Mug", "AlexMaker", 890, "work_5.webp", "cup", "3D纹理"),
+        InspirationCardMeta("Stained Glass Prism Magnet", "GothicArt", 610, "work_6.webp", "magnet", "艺术家日常"),
+        InspirationCardMeta("Moonlight Witch Ornament Skill", "WhiskersDesign", 1205, "Moonlight Witch Ornament Skill.webp", "coaster", "节日快乐"),
+        InspirationCardMeta("Floral Halloween Skeleton Relief", "Katniss_e", 842, "Floral Halloween Skeleton Skill.webp", "sheet", "艺术家日常")
     )
+
+    val displayedItems = if (selectedFilterIndex == 0) {
+        allInspirationItems
+    } else {
+        val selectedCat = filterPills[selectedFilterIndex]
+        allInspirationItems.filter { it.category == selectedCat }
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF7F8FA))) {
         LazyColumn(
@@ -73,24 +97,25 @@ fun CreateScreen(
                         color = Color(0xFF1A1A1A)
                     )
 
-                    // Top-right device status pill: "没有设备"
+                    // Top-right device status pill: Real status + clickable to switch to Devices tab
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
                             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
+                            .clickable(onClick = onOpenDevices)
                             .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(14.dp)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFF1A1A1A))
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isDeviceConnected) BrandGreen else Color(0xFF94A3B8))
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "没有设备",
+                                text = if (isDeviceConnected) "$deviceName (就绪)" else "没有设备",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1A1A1A)
@@ -167,30 +192,31 @@ fun CreateScreen(
                             .padding(horizontal = 16.dp, vertical = 18.dp)
                     ) {
                         // Card Header
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
                                     text = "选择基材",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1A1A1A)
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "从选择一个基材开始，在基材上做设计",
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF8E8E93)
+                                    text = "查看全部",
+                                    fontSize = 12.sp,
+                                    color = BrandGreen,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.clickable { substrateToConfigure = Substrate.DEFAULT }
                                 )
                             }
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "查看全部",
-                                fontSize = 12.sp,
-                                color = Color(0xFF8E8E93),
-                                modifier = Modifier.clickable { }
+                                text = "从选择一个基材开始，在基材上做设计",
+                                fontSize = 11.sp,
+                                color = Color(0xFF8E8E93)
                             )
                         }
 
@@ -261,42 +287,54 @@ fun CreateScreen(
                 }
             }
 
-            // 5. Community Inspirations Masonry Cards (Frame 0010)
+            // 5. Community Inspirations Masonry Cards with Authentic Artwork
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    inspirationItems.chunked(2).forEach { rowPair ->
+                    displayedItems.chunked(2).forEach { rowPair ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            rowPair.forEach { (meta, color) ->
-                                val (title, author, likes) = meta
+                            rowPair.forEach { item ->
+                                val cardImg = rememberAppImage(item.imageName)
+
                                 Surface(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(16.dp))
                                         .clickable {
-                                            onSelectInspirationItem?.invoke(title) ?: run {
-                                                onSelectSubstrate(Substrate.DEFAULT)
+                                            onSelectInspirationItem?.invoke(item.title, item.imageName, item.substrateId) ?: run {
+                                                val targetSub = Substrate.ALL.firstOrNull { it.id == item.substrateId } ?: Substrate.DEFAULT
+                                                onSelectSubstrate(targetSub)
                                             }
                                         },
                                     color = Color.White,
                                     shadowElevation = 1.dp
                                 ) {
                                     Column {
-                                        // Card Image with top-left layer badge
+                                        // Card Image with authentic loaded bitmap & top-left layer badge
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(130.dp)
-                                                .background(color)
+                                                .height(135.dp)
+                                                .background(Color(0xFFE2E8F0))
                                         ) {
+                                            if (cardImg != null) {
+                                                Image(
+                                                    bitmap = cardImg,
+                                                    contentDescription = item.title,
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            }
+
+                                            // Top-left layer badge
                                             Box(
                                                 modifier = Modifier
                                                     .padding(8.dp)
                                                     .size(22.dp)
                                                     .clip(RoundedCornerShape(6.dp))
-                                                    .background(Color.Black.copy(alpha = 0.45f)),
+                                                    .background(Color.Black.copy(alpha = 0.55f)),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
@@ -306,12 +344,29 @@ fun CreateScreen(
                                                     modifier = Modifier.size(14.dp)
                                                 )
                                             }
+
+                                            // Bottom-right "做同款" pill
+                                            Box(
+                                                modifier = Modifier
+                                                    .align(Alignment.BottomEnd)
+                                                    .padding(6.dp)
+                                                    .clip(RoundedCornerShape(10.dp))
+                                                    .background(Color.Black.copy(alpha = 0.65f))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(
+                                                    text = "做同款",
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
                                         }
 
                                         // Card Details
                                         Column(modifier = Modifier.padding(10.dp)) {
                                             Text(
-                                                text = title,
+                                                text = item.title,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = Color(0xFF1A1A1A),
@@ -333,7 +388,7 @@ fun CreateScreen(
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
                                                     Text(
-                                                        text = author,
+                                                        text = item.author,
                                                         fontSize = 10.sp,
                                                         color = Color(0xFF8E8E93),
                                                         maxLines = 1
@@ -349,7 +404,7 @@ fun CreateScreen(
                                                     )
                                                     Spacer(modifier = Modifier.width(2.dp))
                                                     Text(
-                                                        text = likes.toString(),
+                                                        text = item.likes.toString(),
                                                         fontSize = 10.sp,
                                                         color = Color(0xFF8E8E93)
                                                     )

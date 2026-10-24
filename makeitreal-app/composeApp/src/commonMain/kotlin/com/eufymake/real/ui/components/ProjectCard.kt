@@ -1,5 +1,8 @@
 package com.eufymake.real.ui.components
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,17 +16,20 @@ import androidx.compose.material.icons.filled.ForkRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eufymake.real.model.Project
+import com.eufymake.real.ui.util.rememberAppImage
 
 @Composable
 fun ProjectCard(
@@ -32,6 +38,18 @@ fun ProjectCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val coverBitmap = if (project.imageName.isNotEmpty()) rememberAppImage(project.imageName) else null
+
+    val heartScale = remember { Animatable(1f) }
+    LaunchedEffect(project.isLiked) {
+        if (project.isLiked) {
+            heartScale.animateTo(1.35f, animationSpec = tween(120, easing = FastOutSlowInEasing))
+            heartScale.animateTo(1f, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+        } else {
+            heartScale.snapTo(1f)
+        }
+    }
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -40,7 +58,7 @@ fun ProjectCard(
             .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Visual Cover with subtle UV Relief simulation gradient
+            // Visual Cover with Real Artwork or UV Relief simulation gradient
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -54,6 +72,15 @@ fun ProjectCard(
                         )
                     )
             ) {
+                if (coverBitmap != null) {
+                    Image(
+                        bitmap = coverBitmap,
+                        contentDescription = project.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
                 // Staff Pick badge
                 if (project.isStaffPick) {
                     Box(
@@ -146,7 +173,7 @@ fun ProjectCard(
                         )
                     }
 
-                    // Like button
+                    // Like button with Micro-Bounce Animation
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -158,15 +185,31 @@ fun ProjectCard(
                             imageVector = if (project.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Like",
                             tint = if (project.isLiked) Color(0xFFEF4444) else Color(0xFF94A3B8),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier
+                                .size(14.dp)
+                                .graphicsLayer {
+                                    scaleX = heartScale.value
+                                    scaleY = heartScale.value
+                                }
                         )
                         Spacer(modifier = Modifier.width(3.dp))
-                        Text(
-                            text = "${project.likesCount}",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (project.isLiked) Color(0xFFEF4444) else Color(0xFF64748B)
-                        )
+                        AnimatedContent(
+                            targetState = project.likesCount,
+                            transitionSpec = {
+                                if (targetState > initialState) {
+                                    slideInVertically { -it } + fadeIn() togetherWith slideOutVertically { it } + fadeOut()
+                                } else {
+                                    slideInVertically { it } + fadeIn() togetherWith slideOutVertically { -it } + fadeOut()
+                                }
+                            }
+                        ) { count ->
+                            Text(
+                                text = "$count",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (project.isLiked) Color(0xFFEF4444) else Color(0xFF64748B)
+                            )
+                        }
                     }
                 }
             }

@@ -2,6 +2,7 @@ package com.eufymake.real.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -9,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,7 +21,9 @@ import androidx.compose.ui.unit.sp
 import com.eufymake.real.model.DeviceInfo
 import com.eufymake.real.model.DeviceStatus
 import com.eufymake.real.ui.components.InkBar
+import com.eufymake.real.ui.components.MaintenanceDialog
 import com.eufymake.real.ui.theme.BrandAccent
+import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.theme.BrandPrimary
 
 @Composable
@@ -30,171 +33,66 @@ fun DevicesScreen(
     onToggleAirFiltration: () -> Unit,
     onCancelJob: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 90.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Top Header
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "设备",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = BrandPrimary
-                )
+    var showMaintenanceDialog by remember { mutableStateOf(false) }
+    var showCancelConfirmDialog by remember { mutableStateOf(false) }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFDCFCE7))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF8FAFC))
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 90.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Top Header
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF16A34A))
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "已连接",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF15803D)
-                        )
-                    }
-                }
-            }
-        }
+                    Text(
+                        text = "设备控制台",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = BrandPrimary
+                    )
 
-        // Hardware Machine Card
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
-                    .padding(18.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFDCFCE7))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF0F172A)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Print,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = deviceInfo.modelName,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandPrimary
-                                )
-                                Text(
-                                    text = "S/N: ${deviceInfo.serialNumber} • ${deviceInfo.firmwareVersion}",
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF64748B)
-                                )
-                            }
-                        }
-
-                        val statusColor = when (deviceInfo.status) {
-                            DeviceStatus.PRINTING -> Color(0xFF2563EB)
-                            DeviceStatus.UV_CURING -> Color(0xFF9333EA)
-                            DeviceStatus.PREPARING -> Color(0xFFD97706)
-                            DeviceStatus.IDLE -> Color(0xFF16A34A)
-                            else -> Color(0xFF64748B)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(statusColor.copy(alpha = 0.15f))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = deviceInfo.status.name,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = statusColor
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF16A34A))
                             )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Machine Telemetry Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(text = "Bed Temp", fontSize = 11.sp, color = Color(0xFF64748B))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "${deviceInfo.bedTemperatureC}°C",
-                                fontSize = 14.sp,
+                                text = "已连接 Wi-Fi 5G",
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = BrandPrimary
-                            )
-                        }
-                        Column {
-                            Text(text = "UV LED Lamp", fontSize = 11.sp, color = Color(0xFF64748B))
-                            Text(
-                                text = "${deviceInfo.uvLampTemperatureC}°C",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (deviceInfo.uvLampTemperatureC > 50f) Color(0xFFDC2626) else BrandPrimary
-                            )
-                        }
-                        Column {
-                            Text(text = "Rotary Fixture", fontSize = 11.sp, color = Color(0xFF64748B))
-                            Text(
-                                text = "Installed (Ready)",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF059669)
+                                color = Color(0xFF15803D)
                             )
                         }
                     }
                 }
             }
-        }
 
-        // Active Print Job Card (if printing or preparing)
-        if (deviceInfo.status != DeviceStatus.IDLE) {
+            // Hardware Machine Card
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFFEFF6FF))
-                        .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(18.dp))
-                        .padding(16.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
+                        .padding(18.dp)
                 ) {
                     Column {
                         Row(
@@ -202,189 +100,420 @@ fun DevicesScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
-                                Text(
-                                    text = "ACTIVE UV JOB",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandAccent,
-                                    letterSpacing = 1.sp
-                                )
-                                Text(
-                                    text = deviceInfo.currentJobName ?: "Printing tactile layers...",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandPrimary
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFF0F172A)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Print,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = deviceInfo.modelName,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandPrimary
+                                    )
+                                    Text(
+                                        text = "S/N: ${deviceInfo.serialNumber} • ${deviceInfo.firmwareVersion}",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF64748B)
+                                    )
+                                }
                             }
-                            IconButton(onClick = onCancelJob, modifier = Modifier.size(28.dp)) {
-                                Icon(
-                                    imageVector = Icons.Default.Cancel,
-                                    contentDescription = "Cancel",
-                                    tint = Color(0xFFEF4444)
+
+                            val statusColor = when (deviceInfo.status) {
+                                DeviceStatus.PRINTING -> Color(0xFF2563EB)
+                                DeviceStatus.UV_CURING -> Color(0xFF9333EA)
+                                DeviceStatus.PREPARING -> Color(0xFFD97706)
+                                DeviceStatus.IDLE -> Color(0xFF16A34A)
+                                else -> Color(0xFF64748B)
+                            }
+                            val statusZh = when (deviceInfo.status) {
+                                DeviceStatus.PRINTING -> "UV打印中"
+                                DeviceStatus.UV_CURING -> "UV固化中"
+                                DeviceStatus.PREPARING -> "预热准备中"
+                                DeviceStatus.IDLE -> "待机空闲"
+                                DeviceStatus.PAUSED -> "打印已暂停"
+                                DeviceStatus.COMPLETED -> "打印已完成"
+                                DeviceStatus.OFFLINE -> "设备离线"
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(statusColor.copy(alpha = 0.15f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = statusZh,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = statusColor
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        LinearProgressIndicator(
-                            progress = { deviceInfo.currentJobProgress / 100f },
-                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                            color = BrandAccent,
-                            trackColor = Color(0xFFDBEAFE)
-                        )
+                        // Machine Telemetry Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(text = "平台温度", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(
+                                    text = "${deviceInfo.bedTemperatureC}°C",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandPrimary
+                                )
+                            }
+                            Column {
+                                Text(text = "UV LED 固化灯", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(
+                                    text = "${deviceInfo.uvLampTemperatureC}°C",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (deviceInfo.uvLampTemperatureC > 50f) Color(0xFFDC2626) else BrandPrimary
+                                )
+                            }
+                            Column {
+                                Text(text = "旋转治具模组", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(
+                                    text = "已装配 (就绪)",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF059669)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+            // Active Print Job Card (if printing or preparing)
+            if (deviceInfo.status != DeviceStatus.IDLE) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFFEFF6FF))
+                            .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(18.dp))
+                            .padding(16.dp)
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "正在执行 UV 喷印任务",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandAccent,
+                                        letterSpacing = 1.sp
+                                    )
+                                    Text(
+                                        text = deviceInfo.currentJobName ?: "正在多层堆叠触感微浮雕...",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandPrimary
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { showCancelConfirmDialog = true },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        contentDescription = "Cancel",
+                                        tint = Color(0xFFEF4444),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            LinearProgressIndicator(
+                                progress = { deviceInfo.currentJobProgress / 100f },
+                                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                                color = BrandAccent,
+                                trackColor = Color(0xFFDBEAFE)
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "${deviceInfo.currentJobProgress.toInt()}% 已完成",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = BrandAccent
+                                )
+                                val remainingText = remember(deviceInfo.timeRemainingSeconds) {
+                                    val totalSec = deviceInfo.timeRemainingSeconds
+                                    val mins = totalSec / 60
+                                    val secs = totalSec % 60
+                                    if (mins > 0) "${mins}分${secs}秒" else "${secs}秒"
+                                }
+                                Text(
+                                    text = "预计剩余: $remainingText",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF64748B)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6-Color UV Ink Monitoring Section
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
+                        .padding(18.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "6色 UV 环保墨水余量",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandPrimary
+                            )
+                            Text(
+                                text = "CMYK + 白墨 + 光油",
+                                fontSize = 11.sp,
+                                color = Color(0xFF64748B)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "${deviceInfo.currentJobProgress.toInt()}% complete",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = BrandAccent
-                            )
-                            Text(
-                                text = "ETA: ${deviceInfo.timeRemainingSeconds}s remaining",
-                                fontSize = 12.sp,
-                                color = Color(0xFF64748B)
-                            )
+                            deviceInfo.inkLevels.asList.forEach { channel ->
+                                InkBar(channel = channel)
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // 6-Color UV Ink Monitoring Section
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
-                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(20.dp))
-                    .padding(18.dp)
-            ) {
-                Column {
+            // Maintenance & Calibration Center Card
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color.White)
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(18.dp))
+                        .padding(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFE0E7FF)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Build, contentDescription = null, tint = Color(0xFF4338CA), modifier = Modifier.size(18.dp))
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text("喷头与墨路维护中心", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
+                                    Text("自检压电喷孔与负压平衡", fontSize = 11.sp, color = Color(0xFF64748B))
+                                }
+                            }
+
+                            Button(
+                                onClick = { showMaintenanceDialog = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
+                                shape = RoundedCornerShape(14.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text("进入维护", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                        }
+
+                        // Waste ink status line
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF8FAFC))
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("废墨收集垫占用: 24%", fontSize = 11.sp, color = Color(0xFF475569))
+                            Text("状态正常 (可再喷印约120次)", fontSize = 10.sp, color = Color(0xFF16A34A), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+
+            // Hardware Controls (Chamber light, Air Filter)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "舱体环控系统",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BrandPrimary
+                    )
+
+                    // Chamber Light Switch
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
+                            .padding(14.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "6-Channel UV Ink Levels",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandPrimary
-                        )
-                        Text(
-                            text = "CMYK + W + Gloss",
-                            fontSize = 11.sp,
-                            color = Color(0xFF64748B)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = null,
+                                tint = if (deviceInfo.isChamberLightOn) Color(0xFFF59E0B) else Color(0xFF94A3B8)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "内置对齐补光灯",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = if (deviceInfo.isChamberLightOn) "开启 (4500K 中性白光，高显色对位)" else "关闭",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF64748B)
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = deviceInfo.isChamberLightOn,
+                            onCheckedChange = { onToggleChamberLight() }
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
+                    // Air Filtration Switch
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White)
+                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        deviceInfo.inkLevels.asList.forEach { channel ->
-                            InkBar(channel = channel)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Air,
+                                contentDescription = null,
+                                tint = if (deviceInfo.isAirFiltrationActive) BrandAccent else Color(0xFF94A3B8)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "HEPA 与活性炭 VOC 循环吸附",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = if (deviceInfo.isAirFiltrationActive) "强效运转中 (99.8% UV单体气味净化)" else "待机",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF64748B)
+                                )
+                            }
                         }
+                        Switch(
+                            checked = deviceInfo.isAirFiltrationActive,
+                            onCheckedChange = { onToggleAirFiltration() }
+                        )
                     }
                 }
             }
         }
 
-        // Hardware Controls (Chamber light, Air Filter)
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Chamber Controls",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandPrimary
-                )
-
-                // Chamber Light Switch
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
-                        .padding(14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            tint = if (deviceInfo.isChamberLightOn) Color(0xFFF59E0B) else Color(0xFF94A3B8)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "Internal Chamber Light",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = if (deviceInfo.isChamberLightOn) "ON (4500K Neutral White)" else "OFF",
-                                fontSize = 11.sp,
-                                color = Color(0xFF64748B)
-                            )
-                        }
-                    }
-                    Switch(
-                        checked = deviceInfo.isChamberLightOn,
-                        onCheckedChange = { onToggleChamberLight() }
+        // Cancel Print Job Confirmation Dialog
+        if (showCancelConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showCancelConfirmDialog = false },
+                title = {
+                    Text("终止当前打印任务？", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                },
+                text = {
+                    Text(
+                        "当前 UV 喷印与多层固化作业正在进行中，强行中止将导致当前基材报废且无法恢复。确定要停止打印机运转吗？",
+                        fontSize = 13.sp,
+                        color = Color(0xFF64748B)
                     )
-                }
-
-                // Air Filtration Switch
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(14.dp))
-                        .padding(14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Air,
-                            contentDescription = null,
-                            tint = if (deviceInfo.isAirFiltrationActive) BrandAccent else Color(0xFF94A3B8)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "HEPA & Carbon VOC Filter",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = if (deviceInfo.isAirFiltrationActive) "Active (99.8% VOC Absorption)" else "Standby",
-                                fontSize = 11.sp,
-                                color = Color(0xFF64748B)
-                            )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showCancelConfirmDialog = false
+                            onCancelJob()
                         }
+                    ) {
+                        Text("确定终止", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
                     }
-                    Switch(
-                        checked = deviceInfo.isAirFiltrationActive,
-                        onCheckedChange = { onToggleAirFiltration() }
-                    )
-                }
-            }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showCancelConfirmDialog = false }) {
+                        Text("继续作业", color = Color(0xFF1E293B))
+                    }
+                },
+                shape = RoundedCornerShape(16.dp),
+                containerColor = Color.White
+            )
+        }
+
+        // Maintenance Dialog
+        if (showMaintenanceDialog) {
+            MaintenanceDialog(
+                onDismiss = { showMaintenanceDialog = false }
+            )
         }
     }
 }

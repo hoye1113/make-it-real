@@ -1,5 +1,6 @@
 package com.eufymake.real.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -16,13 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.model.LayerType
-import com.eufymake.real.ui.theme.BrandGreen
+import com.eufymake.real.ui.util.rememberAppImage
+
+data class StickerVisualItem(
+    val name: String,
+    val imageName: String,
+    val defaultReliefMm: Float = 2.0f
+)
 
 @Composable
 fun ElementsDrawer(
@@ -32,16 +41,44 @@ fun ElementsDrawer(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryIndex by remember { mutableStateOf(0) }
 
-    val categories = listOf("模板", "图形", "图片", "艺术字体", "图案", "形状", "图案纹理")
+    val categories = listOf("推荐全部", "万圣限定", "潮流贴纸", "3D浮雕", "几何图形")
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.85f)
-                .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 24.dp, bottomEnd = 24.dp)),
-            color = Color.White
+    val halloweenPack = listOf(
+        StickerVisualItem("南瓜女巫猫", "Halloween Witch Cat Decor Skill.webp", 2.4f),
+        StickerVisualItem("暗黑骷髅浮雕", "work_1.webp", 2.0f),
+        StickerVisualItem("微缩夜光古堡", "work_2.webp", 2.2f),
+        StickerVisualItem("幽灵糖果徽章", "work_3.webp", 1.8f)
+    )
+
+    val trendyPack = listOf(
+        StickerVisualItem("波普潮玩头像", "work_4.webp", 1.5f),
+        StickerVisualItem("炫彩赛博字母", "work_5.webp", 1.2f),
+        StickerVisualItem("复古机械齿轮", "work_6.webp", 2.5f),
+        StickerVisualItem("立体萌趣柴犬", "work_7.webp", 2.0f)
+    )
+
+    val reliefPack = listOf(
+        StickerVisualItem("高触感微浮雕纹样", "work_8.webp", 2.8f),
+        StickerVisualItem("仿金箔立体徽记", "work_1.webp", 2.0f),
+        StickerVisualItem("亚克力通透印花", "work_2.webp", 1.5f)
+    )
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = Color.White,
+                shadowElevation = 16.dp
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,7 +119,7 @@ fun ElementsDrawer(
                         BasicTextFieldNoBorder(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = "搜索",
+                            placeholder = "搜索贴纸、图案或元素...",
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -125,88 +162,211 @@ fun ElementsDrawer(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Content Lists
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                val filteredHalloween = halloweenPack.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                val filteredTrendy = trendyPack.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                val filteredRelief = reliefPack.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                val shapeItems = listOf(
+                    "圆形底座" to Color(0xFF455A64),
+                    "八角画框" to Color(0xFF5D4037),
+                    "星芒光环" to Color(0xFFFBC02D),
+                    "立体盾牌" to Color(0xFF00796B)
+                ).filter { it.first.contains(searchQuery, ignoreCase = true) }
+
+                val showHalloween = (selectedCategoryIndex == 0 || selectedCategoryIndex == 1) && filteredHalloween.isNotEmpty()
+                val showTrendy = (selectedCategoryIndex == 0 || selectedCategoryIndex == 2) && filteredTrendy.isNotEmpty()
+                val showRelief = (selectedCategoryIndex == 0 || selectedCategoryIndex == 3) && filteredRelief.isNotEmpty()
+                val showShapes = (selectedCategoryIndex == 0 || selectedCategoryIndex == 4) && shapeItems.isNotEmpty()
+                val hasAnyResults = showHalloween || showTrendy || showRelief || showShapes
+
+                if (!hasAnyResults) {
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "未找到与 \"$searchQuery\" 相关的贴图或元素",
+                            fontSize = 13.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                } else {
+                    // Content Lists
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(18.dp)
+                    ) {
+                        if (showHalloween) {
+                            item {
+                                StickerVisualRow(
+                                    title = "万圣狂欢限定贴纸包 (${filteredHalloween.size})",
+                                    items = filteredHalloween,
+                                    onSelectItem = { item ->
+                                        onAddLayer(
+                                            CanvasLayer(
+                                                id = "layer_sticker_${System.currentTimeMillis()}",
+                                                name = item.name,
+                                                type = LayerType.IMAGE,
+                                                imageUrl = item.imageName,
+                                                widthMm = 55f,
+                                                heightMm = 55f,
+                                                reliefDepthMm = item.defaultReliefMm,
+                                                fillColor = 0xFF2E7D32L
+                                            )
+                                        )
+                                        onDismiss()
+                                    }
+                                )
+                            }
+                        }
+
+                        if (showTrendy) {
+                            item {
+                                StickerVisualRow(
+                                    title = "潮流艺术家联名贴图 (${filteredTrendy.size})",
+                                    items = filteredTrendy,
+                                    onSelectItem = { item ->
+                                        onAddLayer(
+                                            CanvasLayer(
+                                                id = "layer_sticker_${System.currentTimeMillis()}",
+                                                name = item.name,
+                                                type = LayerType.IMAGE,
+                                                imageUrl = item.imageName,
+                                                widthMm = 55f,
+                                                heightMm = 55f,
+                                                reliefDepthMm = item.defaultReliefMm,
+                                                fillColor = 0xFF2E7D32L
+                                            )
+                                        )
+                                        onDismiss()
+                                    }
+                                )
+                            }
+                        }
+
+                        if (showRelief) {
+                            item {
+                                StickerVisualRow(
+                                    title = "3D 微浮雕触感贴图 (${filteredRelief.size})",
+                                    items = filteredRelief,
+                                    onSelectItem = { item ->
+                                        onAddLayer(
+                                            CanvasLayer(
+                                                id = "layer_sticker_${System.currentTimeMillis()}",
+                                                name = item.name,
+                                                type = LayerType.IMAGE,
+                                                imageUrl = item.imageName,
+                                                widthMm = 60f,
+                                                heightMm = 60f,
+                                                reliefDepthMm = item.defaultReliefMm,
+                                                fillColor = 0xFF2E7D32L
+                                            )
+                                        )
+                                        onDismiss()
+                                    }
+                                )
+                            }
+                        }
+
+                        if (showShapes) {
+                            item {
+                                SectionRow(
+                                    title = "几何基础与装饰徽章",
+                                    items = shapeItems,
+                                    onSelectItem = { name, color ->
+                                        onAddLayer(
+                                            CanvasLayer(
+                                                id = "layer_elem_${System.currentTimeMillis()}",
+                                                name = name,
+                                                type = LayerType.SHAPE,
+                                                shapeType = "RECTANGLE",
+                                                widthMm = 45f,
+                                                heightMm = 45f,
+                                                reliefDepthMm = 1.2f,
+                                                fillColor = color.value.toLong()
+                                            )
+                                        )
+                                        onDismiss()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+}
+
+@Composable
+private fun StickerVisualRow(
+    title: String,
+    items: List<StickerVisualItem>,
+    onSelectItem: (StickerVisualItem) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1A1A)
+            )
+            Text(
+                text = "更多",
+                fontSize = 12.sp,
+                color = Color(0xFF8E8E93)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(items) { item ->
+                val bmp = rememberAppImage(item.imageName)
+                Box(
+                    modifier = Modifier
+                        .size(width = 88.dp, height = 96.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF8FAFC))
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(12.dp))
+                        .clickable { onSelectItem(item) }
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    item {
-                        SectionRow(
-                            title = "valentine retro design(11)",
-                            items = listOf(
-                                "Retro Heart Tag" to Color(0xFFFF6B6B),
-                                "Cupid Arrow Emblem" to Color(0xFFFF8E72),
-                                "Vintage Love Letter" to Color(0xFFF9CA24),
-                                "Floral Ribbon" to Color(0xFF6AB04C)
-                            ),
-                            onSelectItem = { name, color ->
-                                onAddLayer(
-                                    CanvasLayer(
-                                        id = "layer_elem_${System.currentTimeMillis()}",
-                                        name = name,
-                                        type = LayerType.SHAPE,
-                                        shapeType = "RECTANGLE",
-                                        widthMm = 45f,
-                                        heightMm = 45f,
-                                        reliefDepthMm = 1.2f,
-                                        fillColor = color.value.toLong()
-                                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFE2E8F0))
+                        ) {
+                            if (bmp != null) {
+                                Image(
+                                    bitmap = bmp,
+                                    contentDescription = item.name,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
                                 )
-                                onDismiss()
                             }
-                        )
-                    }
-
-                    item {
-                        SectionRow(
-                            title = "retro colorful birthday greeting cards(8)",
-                            items = listOf(
-                                "Retro Dino Clock" to Color(0xFF388E3C),
-                                "Birthday Banner 3D" to Color(0xFF1976D2),
-                                "Pop Gift Box" to Color(0xFF8E24AA),
-                                "Cupcake Relief" to Color(0xFFF57C00)
-                            ),
-                            onSelectItem = { name, color ->
-                                onAddLayer(
-                                    CanvasLayer(
-                                        id = "layer_elem_${System.currentTimeMillis()}",
-                                        name = name,
-                                        type = LayerType.IMAGE,
-                                        widthMm = 55f,
-                                        heightMm = 55f,
-                                        reliefDepthMm = 2.0f,
-                                        fillColor = color.value.toLong()
-                                    )
-                                )
-                                onDismiss()
-                            }
-                        )
-                    }
-
-                    item {
-                        SectionRow(
-                            title = "几何基础与装饰边框",
-                            items = listOf(
-                                "圆形徽章底座" to Color(0xFF455A64),
-                                "八角形画框" to Color(0xFF5D4037),
-                                "星芒光环" to Color(0xFFFBC02D),
-                                "盾形立体浮雕" to Color(0xFF00796B)
-                            ),
-                            onSelectItem = { name, color ->
-                                onAddLayer(
-                                    CanvasLayer(
-                                        id = "layer_elem_${System.currentTimeMillis()}",
-                                        name = name,
-                                        type = LayerType.SHAPE,
-                                        shapeType = "CIRCLE",
-                                        widthMm = 50f,
-                                        heightMm = 50f,
-                                        reliefDepthMm = 1.5f,
-                                        fillColor = color.value.toLong()
-                                    )
-                                )
-                                onDismiss()
-                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            item.name,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            color = Color(0xFF334155)
                         )
                     }
                 }
@@ -233,12 +393,6 @@ private fun SectionRow(
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A1A1A)
             )
-            Text(
-                text = "查看全部",
-                fontSize = 12.sp,
-                color = Color(0xFF8E8E93),
-                modifier = Modifier.clickable { }
-            )
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -250,7 +404,7 @@ private fun SectionRow(
             items(items) { (name, color) ->
                 Box(
                     modifier = Modifier
-                        .size(width = 85.dp, height = 85.dp)
+                        .size(width = 80.dp, height = 80.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFFF2F3F5))
                         .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
@@ -260,7 +414,7 @@ private fun SectionRow(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(45.dp)
+                            .size(40.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(color)
                     )
@@ -277,29 +431,27 @@ fun BasicTextFieldNoBorder(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
-        if (value.isEmpty()) {
-            Text(
-                text = placeholder,
-                fontSize = 13.sp,
-                color = Color(0xFF8E8E93)
-            )
-        }
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
-            ),
-            textStyle = androidx.compose.ui.text.TextStyle(
-                fontSize = 13.sp,
-                color = Color(0xFF1A1A1A)
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = androidx.compose.ui.text.TextStyle(
+            fontSize = 13.sp,
+            color = Color(0xFF1A1A1A)
+        ),
+        cursorBrush = androidx.compose.ui.graphics.SolidColor(Color(0xFF2E7D32)),
+        decorationBox = { innerTextField ->
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        fontSize = 13.sp,
+                        color = Color(0xFF8E8E93)
+                    )
+                }
+                innerTextField()
+            }
+        },
+        modifier = modifier.fillMaxWidth()
+    )
 }
