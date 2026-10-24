@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.ui.theme.BrandGreen
 import kotlinx.coroutines.delay
 
@@ -27,6 +28,7 @@ import kotlinx.coroutines.delay
 fun MaintenanceDialog(
     onDismiss: () -> Unit
 ) {
+    val strings = LocalStrings.current
     var isRunningMaintenance by remember { mutableStateOf(false) }
     var currentTaskName by remember { mutableStateOf("") }
     var progressPercent by remember { mutableStateOf(0f) }
@@ -79,7 +81,7 @@ fun MaintenanceDialog(
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            "喷头与墨路维护中心",
+                            strings.dialog.maintenanceCenterTitle,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0F172A)
@@ -116,14 +118,14 @@ fun MaintenanceDialog(
                             )
 
                             Text(
-                                "正在执行：$currentTaskName",
+                                strings.dialog.executingTask(currentTaskName),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF15803D)
                             )
 
                             Text(
-                                "微压电脉冲负压吸墨中，预计剩余 $secondsLeft 秒...",
+                                strings.dialog.maintenanceInProgress(secondsLeft),
                                 fontSize = 11.sp,
                                 color = Color(0xFF166534)
                             )
@@ -141,13 +143,13 @@ fun MaintenanceDialog(
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(36.dp))
                             Text(
-                                "维护作业完成！",
+                                strings.dialog.maintenanceComplete,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF15803D)
                             )
                             Text(
-                                "6通道喷孔物理通畅度达 100%，已重置负压平衡",
+                                strings.dialog.maintenanceCompleteDetail,
                                 fontSize = 11.sp,
                                 color = Color(0xFF166534)
                             )
@@ -156,6 +158,8 @@ fun MaintenanceDialog(
                 }
 
                 // Waste Ink Tank Status Bar
+                val wasteInkProgress = 0.24f
+                val wasteInkPercent = (wasteInkProgress * 100).toInt()
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -169,11 +173,11 @@ fun MaintenanceDialog(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("废墨收集箱余量", fontSize = 12.sp, color = Color(0xFF475569))
-                            Text("24% (状态良好)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
+                            Text(strings.dialog.wasteInkTank, fontSize = 12.sp, color = Color(0xFF475569))
+                            Text(strings.dialog.wasteInkLevel(wasteInkPercent), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
                         }
                         LinearProgressIndicator(
-                            progress = { 0.24f },
+                            progress = { wasteInkProgress },
                             modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                             color = Color(0xFF16A34A),
                             trackColor = Color(0xFFE2E8F0)
@@ -185,7 +189,7 @@ fun MaintenanceDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(
                         onClick = {
-                            currentTaskName = "喷头一键脉冲深度清洗"
+                            currentTaskName = strings.dialog.cleanPrintheadTask
                             isRunningMaintenance = true
                             isCompleted = false
                         },
@@ -194,12 +198,12 @@ fun MaintenanceDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Text("一键清洗喷头 (15秒)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(strings.dialog.cleanPrintheadBtn, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
 
                     OutlinedButton(
                         onClick = {
-                            currentTaskName = "墨路高压循环排气"
+                            currentTaskName = strings.dialog.flushInkTask
                             isRunningMaintenance = true
                             isCompleted = false
                         },
@@ -207,7 +211,7 @@ fun MaintenanceDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(42.dp)
                     ) {
-                        Text("墨路循环排气与自检 (15秒)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1E293B))
+                        Text(strings.dialog.flushInkBtn, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1E293B))
                     }
                 }
             }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.model.LayerType
 import com.eufymake.real.ui.util.rememberAppImage
@@ -38,29 +39,36 @@ fun ElementsDrawer(
     onDismiss: () -> Unit,
     onAddLayer: (CanvasLayer) -> Unit
 ) {
+    val strings = LocalStrings.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryIndex by remember { mutableStateOf(0) }
 
-    val categories = listOf("推荐全部", "万圣限定", "潮流贴纸", "3D浮雕", "几何图形")
+    val categories = listOf(
+        strings.canvas.elementsCatAll,
+        strings.canvas.elementsCatHalloween,
+        strings.canvas.elementsCatTrendy,
+        strings.canvas.elementsCatRelief,
+        strings.canvas.elementsCatShapes
+    )
 
     val halloweenPack = listOf(
-        StickerVisualItem("南瓜女巫猫", "Halloween Witch Cat Decor Skill.webp", 2.4f),
-        StickerVisualItem("暗黑骷髅浮雕", "work_1.webp", 2.0f),
-        StickerVisualItem("微缩夜光古堡", "work_2.webp", 2.2f),
-        StickerVisualItem("幽灵糖果徽章", "work_3.webp", 1.8f)
+        StickerVisualItem(strings.canvas.stickerPumpkinCat, "Halloween Witch Cat Decor Skill.webp", 2.4f),
+        StickerVisualItem(strings.canvas.stickerDarkSkull, "work_1.webp", 2.0f),
+        StickerVisualItem(strings.canvas.stickerGlowCastle, "work_2.webp", 2.2f),
+        StickerVisualItem(strings.canvas.stickerGhostBadge, "work_3.webp", 1.8f)
     )
 
     val trendyPack = listOf(
-        StickerVisualItem("波普潮玩头像", "work_4.webp", 1.5f),
-        StickerVisualItem("炫彩赛博字母", "work_5.webp", 1.2f),
-        StickerVisualItem("复古机械齿轮", "work_6.webp", 2.5f),
-        StickerVisualItem("立体萌趣柴犬", "work_7.webp", 2.0f)
+        StickerVisualItem(strings.canvas.stickerPopAvatar, "work_4.webp", 1.5f),
+        StickerVisualItem(strings.canvas.stickerCyberLetters, "work_5.webp", 1.2f),
+        StickerVisualItem(strings.canvas.stickerVintageGears, "work_6.webp", 2.5f),
+        StickerVisualItem(strings.canvas.stickerShibaInu, "work_7.webp", 2.0f)
     )
 
     val reliefPack = listOf(
-        StickerVisualItem("高触感微浮雕纹样", "work_8.webp", 2.8f),
-        StickerVisualItem("仿金箔立体徽记", "work_1.webp", 2.0f),
-        StickerVisualItem("亚克力通透印花", "work_2.webp", 1.5f)
+        StickerVisualItem(strings.canvas.stickerTactilePattern, "work_8.webp", 2.8f),
+        StickerVisualItem(strings.canvas.stickerGoldEmblem, "work_1.webp", 2.0f),
+        StickerVisualItem(strings.canvas.stickerAcrylicPrint, "work_2.webp", 1.5f)
     )
 
     Dialog(
@@ -119,7 +127,7 @@ fun ElementsDrawer(
                         BasicTextFieldNoBorder(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = "搜索贴纸、图案或元素...",
+                            placeholder = strings.canvas.searchElementsPlaceholder,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -166,10 +174,10 @@ fun ElementsDrawer(
                 val filteredTrendy = trendyPack.filter { it.name.contains(searchQuery, ignoreCase = true) }
                 val filteredRelief = reliefPack.filter { it.name.contains(searchQuery, ignoreCase = true) }
                 val shapeItems = listOf(
-                    "圆形底座" to Color(0xFF455A64),
-                    "八角画框" to Color(0xFF5D4037),
-                    "星芒光环" to Color(0xFFFBC02D),
-                    "立体盾牌" to Color(0xFF00796B)
+                    strings.canvas.shapeCircularBase to Color(0xFF455A64),
+                    strings.canvas.shapeOctagonalFrame to Color(0xFF5D4037),
+                    strings.canvas.shapeStarlightHalo to Color(0xFFFBC02D),
+                    strings.canvas.shapeCrestShield to Color(0xFF00796B)
                 ).filter { it.first.contains(searchQuery, ignoreCase = true) }
 
                 val showHalloween = (selectedCategoryIndex == 0 || selectedCategoryIndex == 1) && filteredHalloween.isNotEmpty()
@@ -184,7 +192,7 @@ fun ElementsDrawer(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "未找到与 \"$searchQuery\" 相关的贴图或元素",
+                            text = strings.canvas.elementsNoMatch(searchQuery),
                             fontSize = 13.sp,
                             color = Color(0xFF94A3B8)
                         )
@@ -198,7 +206,7 @@ fun ElementsDrawer(
                         if (showHalloween) {
                             item {
                                 StickerVisualRow(
-                                    title = "万圣狂欢限定贴纸包 (${filteredHalloween.size})",
+                                    title = strings.canvas.elementsPackHalloween(filteredHalloween.size),
                                     items = filteredHalloween,
                                     onSelectItem = { item ->
                                         onAddLayer(
@@ -222,7 +230,7 @@ fun ElementsDrawer(
                         if (showTrendy) {
                             item {
                                 StickerVisualRow(
-                                    title = "潮流艺术家联名贴图 (${filteredTrendy.size})",
+                                    title = strings.canvas.elementsPackTrendy(filteredTrendy.size),
                                     items = filteredTrendy,
                                     onSelectItem = { item ->
                                         onAddLayer(
@@ -246,7 +254,7 @@ fun ElementsDrawer(
                         if (showRelief) {
                             item {
                                 StickerVisualRow(
-                                    title = "3D 微浮雕触感贴图 (${filteredRelief.size})",
+                                    title = strings.canvas.elementsPackRelief(filteredRelief.size),
                                     items = filteredRelief,
                                     onSelectItem = { item ->
                                         onAddLayer(
@@ -270,7 +278,7 @@ fun ElementsDrawer(
                         if (showShapes) {
                             item {
                                 SectionRow(
-                                    title = "几何基础与装饰徽章",
+                                    title = strings.canvas.elementsPackShapes,
                                     items = shapeItems,
                                     onSelectItem = { name, color ->
                                         onAddLayer(
@@ -304,6 +312,7 @@ private fun StickerVisualRow(
     items: List<StickerVisualItem>,
     onSelectItem: (StickerVisualItem) -> Unit
 ) {
+    val strings = LocalStrings.current
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -317,7 +326,7 @@ private fun StickerVisualRow(
                 color = Color(0xFF1A1A1A)
             )
             Text(
-                text = "更多",
+                text = strings.common.viewAll,
                 fontSize = 12.sp,
                 color = Color(0xFF8E8E93)
             )

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.eufymake.real.api.CreatorProfileDto
 import com.eufymake.real.model.Project
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.rememberAppImage
 
@@ -40,7 +41,8 @@ fun CreatorProfileDialog(
     onSelectProject: (Project) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf("作品") }
+    val strings = LocalStrings.current
+    var selectedTabIndex by remember { mutableStateOf(0) }
     var toastMsg by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(toastMsg) {
@@ -99,7 +101,7 @@ fun CreatorProfileDialog(
 
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     IconButton(
-                                        onClick = { toastMsg = "创作者主页链接已复制到剪贴板" },
+                                        onClick = { toastMsg = strings.dialog.creatorLinkCopied },
                                         modifier = Modifier
                                             .size(34.dp)
                                             .clip(CircleShape)
@@ -159,7 +161,7 @@ fun CreatorProfileDialog(
                                         modifier = Modifier.height(36.dp)
                                     ) {
                                         Text(
-                                            text = if (creator.isFollowing) "已关注 ✓" else "+ 关注",
+                                            text = if (creator.isFollowing) strings.community.following else strings.community.follow,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = if (creator.isFollowing) Color(0xFF475569) else Color.White
@@ -167,7 +169,7 @@ fun CreatorProfileDialog(
                                     }
 
                                     OutlinedButton(
-                                        onClick = { toastMsg = "私信功能：已建立与 ${creator.name} 的加密通道" },
+                                        onClick = { toastMsg = strings.dialog.directMessageChannel(creator.name) },
                                         shape = RoundedCornerShape(18.dp),
                                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                                         modifier = Modifier.height(36.dp)
@@ -253,7 +255,7 @@ fun CreatorProfileDialog(
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF0F172A)
                                     )
-                                    Text("粉丝", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.community.followers, fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                                 Box(
                                     modifier = Modifier
@@ -268,7 +270,7 @@ fun CreatorProfileDialog(
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF0F172A)
                                     )
-                                    Text("关注中", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.community.followingTab, fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                                 Box(
                                     modifier = Modifier
@@ -283,13 +285,13 @@ fun CreatorProfileDialog(
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF0F172A)
                                     )
-                                    Text("获赞与收藏", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.community.likesAndCollects, fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                             }
                         }
                     }
 
-                    // 3. Tab Pills (作品 / 合集 / 赞过)
+                    // 3. Tab Pills
                     item {
                         Row(
                             modifier = Modifier
@@ -298,12 +300,13 @@ fun CreatorProfileDialog(
                                 .offset(y = (-20).dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            listOf("作品", "合集", "赞过").forEach { tab ->
-                                val isSelected = selectedTab == tab
+                            val tabs = listOf(strings.community.tabCreations, strings.community.tabCollections, strings.community.tabLiked)
+                            tabs.forEachIndexed { idx, tab ->
+                                val isSelected = selectedTabIndex == idx
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     modifier = Modifier
-                                        .clickable { selectedTab = tab }
+                                        .clickable { selectedTabIndex = idx }
                                         .padding(vertical = 4.dp)
                                 ) {
                                     Text(
@@ -344,7 +347,7 @@ fun CreatorProfileDialog(
                                         .height(120.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("暂无公开作品", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                    Text(strings.community.noPublicCreations, fontSize = 12.sp, color = Color(0xFF94A3B8))
                                 }
                             } else {
                                 itemsToShow.chunked(2).forEach { rowPair ->

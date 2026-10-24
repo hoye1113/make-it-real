@@ -79,6 +79,8 @@ import com.eufymake.real.ui.theme.BrandBlack
 
 import com.eufymake.real.ui.theme.BrandGreen
 
+import com.eufymake.real.i18n.LocalStrings
+
 import kotlin.math.roundToInt
 
 @Composable
@@ -116,7 +118,7 @@ fun DesignCanvasScreen(
     onNavigateToCraftMode: () -> Unit
 
 ) {
-
+    val strings = LocalStrings.current
     var selectedLayerId by remember { mutableStateOf<String?>(draft.layers.firstOrNull()?.id) }
 
     val selectedLayer = draft.layers.firstOrNull { it.id == selectedLayerId }
@@ -211,7 +213,7 @@ fun DesignCanvasScreen(
 
                             Text(
 
-                                text = "标准 · 摄像头对齐",
+                                text = strings.canvas.cameraAligned,
 
                                 fontSize = 12.sp,
 
@@ -358,7 +360,7 @@ fun DesignCanvasScreen(
 
                             Text(
 
-                                text = "🎨 打印板已就绪",
+                                text = strings.canvas.canvasReady,
 
                                 fontSize = 15.sp,
 
@@ -372,7 +374,7 @@ fun DesignCanvasScreen(
 
                             Text(
 
-                                text = "选择工具快速添加您的创作内容",
+                                text = strings.canvas.quickAddTip,
 
                                 fontSize = 11.sp,
 
@@ -398,7 +400,7 @@ fun DesignCanvasScreen(
 
                                 ) {
 
-                                    Text("📸 上传图片", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(strings.canvas.uploadPhoto, fontSize = 11.sp, fontWeight = FontWeight.Bold)
 
                                 }
 
@@ -416,7 +418,7 @@ fun DesignCanvasScreen(
 
                                 ) {
 
-                                    Text("🔤 文字", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                                    Text(strings.canvas.addText, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
 
                                 }
 
@@ -434,7 +436,7 @@ fun DesignCanvasScreen(
 
                                 ) {
 
-                                    Text("🎨 贴纸", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                                    Text(strings.canvas.stickers, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
 
                                 }
 
@@ -452,7 +454,7 @@ fun DesignCanvasScreen(
 
                                 ) {
 
-                                    Text("✨ AI浮雕", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                                    Text(strings.canvas.aiEmboss, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
 
                                 }
 
@@ -574,7 +576,7 @@ fun DesignCanvasScreen(
 
                             Text(
 
-                                text = "平面  白墨->CMYK->光油",
+                                text = strings.canvas.recipePill,
 
                                 fontSize = 11.sp,
 
@@ -700,7 +702,9 @@ fun DesignCanvasScreen(
 
                                     .border(1.dp, Color(0xFFE5E7EB), CircleShape)
 
-                                    .clickable { toastMessage = "圆柱杯体展开：左右斜线区为把手避让区" },
+                                    .clickable {
+                                        toastMessage = strings.canvas.mugHint
+                                    },
 
                                 contentAlignment = Alignment.Center
 
@@ -782,45 +786,45 @@ fun DesignCanvasScreen(
                             item {
                                 DockItem(
                                     icon = Icons.Default.Crop,
-                                    label = "裁切",
-                                    onClick = { toastMessage = "裁剪功能已激活" }
+                                    label = strings.canvas.crop,
+                                    onClick = { toastMessage = "Crop mode" }
                                 )
                             }
                             item {
                                 DockItem(
                                     icon = Icons.Default.AutoAwesome,
-                                    label = "技能",
+                                    label = strings.canvas.skills,
                                     onClick = { showSkillsDrawer = true }
                                 )
                             }
                             item {
                                 DockItem(
                                     icon = Icons.Default.Image,
-                                    label = "AI生图",
+                                    label = strings.canvas.aiGenerate,
                                     onClick = { showAIDialog = true }
                                 )
                             }
                             item {
                                 DockItem(
                                     icon = Icons.Default.Face,
-                                    label = "一键抠图",
+                                    label = strings.canvas.removeBg,
                                     onClick = {
-                                        toastMessage = "AI一键扣图成功"
-                                        onUpdateLayer(selectedLayer.copy(name = "${selectedLayer.name} (已扣图)"))
+                                        toastMessage = "Cutout complete"
+                                        onUpdateLayer(selectedLayer.copy(name = "${selectedLayer.name} (Cutout)"))
                                     }
                                 )
                             }
                             item {
                                 DockItem(
                                     icon = Icons.Default.HighQuality,
-                                    label = "超分高清",
-                                    onClick = { toastMessage = "画质提升：UV 1440 DPI超清超分完成" }
+                                    label = strings.canvas.upscale,
+                                    onClick = { toastMessage = "UV 1440 DPI HD complete" }
                                 )
                             }
                             item {
                                 DockItem(
                                     icon = Icons.Default.AddCircleOutline,
-                                    label = "添加",
+                                    label = strings.common.done,
                                     onClick = { showUploadDrawer = true }
                                 )
                             }
@@ -867,27 +871,27 @@ fun DesignCanvasScreen(
                         ) {
                             DockItem(
                                 icon = Icons.Default.CloudUpload,
-                                label = "上传",
+                                label = strings.canvas.upload,
                                 onClick = { showUploadDrawer = true }
                             )
                             DockItem(
                                 icon = Icons.Default.AutoAwesome,
-                                label = "技能",
+                                label = strings.canvas.skills,
                                 onClick = { showSkillsDrawer = true }
                             )
                             DockItem(
                                 icon = Icons.Default.Image,
-                                label = "图像AI",
+                                label = strings.canvas.aiGenerate,
                                 onClick = { showAIDialog = true }
                             )
                             DockItem(
                                 icon = Icons.Default.Title,
-                                label = "文字",
+                                label = strings.canvas.addText,
                                 onClick = { showTextDialog = true }
                             )
                             DockItem(
                                 icon = Icons.Default.Widgets,
-                                label = "元素",
+                                label = strings.canvas.elements,
                                 onClick = { showElementsDrawer = true }
                             )
                         }
@@ -904,7 +908,7 @@ fun DesignCanvasScreen(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Text(
-                                    text = "下一步",
+                                    text = strings.canvas.nextStep,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -1107,6 +1111,7 @@ private fun FlatSubstrateBed(
     onUpdateLayerTransient: (CanvasLayer) -> Unit,
     onUpdateLayer: (CanvasLayer) -> Unit
 ) {
+    val strings = LocalStrings.current
     var isSnappedX by remember { mutableStateOf(false) }
     var isSnappedY by remember { mutableStateOf(false) }
 
@@ -1198,9 +1203,9 @@ private fun FlatSubstrateBed(
             ) {
                 Text(
                     text = when {
-                        isSnappedX && isSnappedY -> "🎯 中心点吸附 (0, 0)"
-                        isSnappedX -> "↔️ 水平居中吸附 (X: 0mm)"
-                        else -> "↕️ 垂直居中吸附 (Y: 0mm)"
+                        isSnappedX && isSnappedY -> strings.canvas.snapCenter
+                        isSnappedX -> strings.canvas.snapH
+                        else -> strings.canvas.snapV
                     },
                     color = Color.White,
                     fontSize = 10.sp,
@@ -1222,6 +1227,7 @@ private fun MugUnrolledBed(
     onUpdateLayerTransient: (CanvasLayer) -> Unit,
     onUpdateLayer: (CanvasLayer) -> Unit
 ) {
+    val strings = LocalStrings.current
     var isSnappedX by remember { mutableStateOf(false) }
     var isSnappedY by remember { mutableStateOf(false) }
 
@@ -1345,9 +1351,9 @@ private fun MugUnrolledBed(
                     ) {
                         Text(
                             text = when {
-                                isSnappedX && isSnappedY -> "🎯 中心点吸附 (0, 0)"
-                                isSnappedX -> "↔️ 水平居中吸附 (X: 0mm)"
-                                else -> "↕️ 垂直居中吸附 (Y: 0mm)"
+                                isSnappedX && isSnappedY -> strings.canvas.snapCenter
+                                isSnappedX -> strings.canvas.snapH
+                                else -> strings.canvas.snapV
                             },
                             color = Color.White,
                             fontSize = 10.sp,
@@ -1374,7 +1380,7 @@ private fun MugUnrolledBed(
 
                 Icon(Icons.Default.Coffee, contentDescription = null, tint = Color(0xFF94A3B8), modifier = Modifier.size(24.dp))
 
-                Text("把手左侧", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                Text(strings.canvas.mugHandleLeft, fontSize = 10.sp, color = Color(0xFF94A3B8))
 
             }
 
@@ -1382,7 +1388,7 @@ private fun MugUnrolledBed(
 
                 Icon(Icons.Default.LocalCafe, contentDescription = null, tint = Color(0xFF94A3B8), modifier = Modifier.size(24.dp))
 
-                Text("杯身正面", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                Text(strings.canvas.mugFront, fontSize = 10.sp, color = Color(0xFF94A3B8))
 
             }
 
@@ -1390,7 +1396,7 @@ private fun MugUnrolledBed(
 
                 Icon(Icons.Default.Coffee, contentDescription = null, tint = Color(0xFF94A3B8), modifier = Modifier.size(24.dp).graphicsLayer { scaleX = -1f })
 
-                Text("把手右侧", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                Text(strings.canvas.mugHandleRight, fontSize = 10.sp, color = Color(0xFF94A3B8))
 
             }
 

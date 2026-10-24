@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eufymake.real.api.AcademyCourseDto
+import com.eufymake.real.i18n.LanguageManager
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.*
 import com.eufymake.real.repository.*
 import com.eufymake.real.ui.components.*
@@ -39,8 +41,10 @@ enum class StudioScreen {
 
 @Composable
 fun App() {
-    MakeItRealTheme {
-        // Singletons / Repositories
+    CompositionLocalProvider(LocalStrings provides LanguageManager.strings) {
+        MakeItRealTheme {
+            val strings = LocalStrings.current
+            // Singletons / Repositories
         val draftRepo = remember { MockDraftRepository() }
         val communityRepo = remember { MockCommunityRepository() }
         val deviceRepo = remember { MockDeviceRepository() }
@@ -146,13 +150,13 @@ fun App() {
                                     icon = {
                                         Icon(
                                             Icons.Default.AddBox,
-                                            contentDescription = "创作",
+                                            contentDescription = strings.nav.create,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     },
                                     label = {
                                         Text(
-                                            "创作",
+                                            strings.nav.create,
                                             fontSize = 11.sp,
                                             fontWeight = if (currentTab == AppTab.CREATE) FontWeight.Bold else FontWeight.Normal
                                         )
@@ -167,13 +171,13 @@ fun App() {
                                     icon = {
                                         Icon(
                                             Icons.Default.Print,
-                                            contentDescription = "设备",
+                                            contentDescription = strings.nav.devices,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     },
                                     label = {
                                         Text(
-                                            "设备",
+                                            strings.nav.devices,
                                             fontSize = 11.sp,
                                             fontWeight = if (currentTab == AppTab.DEVICES) FontWeight.Bold else FontWeight.Normal
                                         )
@@ -188,13 +192,13 @@ fun App() {
                                     icon = {
                                         Icon(
                                             Icons.Default.Lightbulb,
-                                            contentDescription = "灵感",
+                                            contentDescription = strings.nav.inspirations,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     },
                                     label = {
                                         Text(
-                                            "灵感",
+                                            strings.nav.inspirations,
                                             fontSize = 11.sp,
                                             fontWeight = if (currentTab == AppTab.INSPIRATIONS) FontWeight.Bold else FontWeight.Normal
                                         )
@@ -209,13 +213,13 @@ fun App() {
                                     icon = {
                                         Icon(
                                             Icons.Default.AccountCircle,
-                                            contentDescription = "我的",
+                                            contentDescription = strings.nav.profile,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     },
                                     label = {
                                         Text(
-                                            "我的",
+                                            strings.nav.profile,
                                             fontSize = 11.sp,
                                             fontWeight = if (currentTab == AppTab.ME) FontWeight.Bold else FontWeight.Normal
                                         )
@@ -235,7 +239,7 @@ fun App() {
                                             createStarterDraft(
                                                 draftRepo = draftRepo,
                                                 substrate = substrate,
-                                                title = "${substrate.nameZh}设计主体",
+                                                title = "${substrate.displayName} - Studio",
                                                 imageUrl = "work_1.webp",
                                                 widthMm = (substrate.widthMm * 0.7f).coerceAtMost(80f),
                                                 heightMm = (substrate.heightMm * 0.7f).coerceAtMost(80f),
@@ -308,7 +312,7 @@ fun App() {
                                             createStarterDraft(
                                                 draftRepo = draftRepo,
                                                 substrate = sub,
-                                                title = "实验: ${course.title}",
+                                                title = strings.canvas.draftFromCourse(course.title),
                                                 imageUrl = course.coverImageName
                                             )
                                         },
@@ -318,7 +322,7 @@ fun App() {
                                             createStarterDraft(
                                                 draftRepo = draftRepo,
                                                 substrate = substrate,
-                                                title = "同款: ${project.title}",
+                                                title = strings.canvas.draftFromProject(project.title),
                                                 imageUrl = project.imageName,
                                                 widthMm = 75f,
                                                 heightMm = 75f
@@ -380,7 +384,7 @@ fun App() {
                             createStarterDraft(
                                 draftRepo = draftRepo,
                                 substrate = sub,
-                                title = "实验: ${course.title}",
+                                title = strings.canvas.draftFromCourse(course.title),
                                 imageUrl = course.coverImageName
                             )
                         },
@@ -396,6 +400,7 @@ fun App() {
             )
         }
     }
+}
 }
 
 private fun createStarterDraft(

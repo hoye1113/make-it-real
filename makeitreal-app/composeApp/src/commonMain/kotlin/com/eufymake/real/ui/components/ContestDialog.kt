@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.eufymake.real.api.ActivityDto
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.rememberAppImage
 
@@ -33,6 +34,7 @@ fun ContestDialog(
     onSubmitEntry: (craftNotes: String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalStrings.current
     var showSubmissionForm by remember { mutableStateOf(false) }
     var notesText by remember { mutableStateOf("") }
     var submittedSuccessfully by remember { mutableStateOf(false) }
@@ -93,7 +95,7 @@ fun ContestDialog(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                "官方大赛 • ${activity.prizePoolDesc.ifBlank { "奖池 $5,000" }}",
+                                strings.dialog.officialContest(activity.prizePoolDesc),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF991B1B)
@@ -142,14 +144,14 @@ fun ContestDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    if (isExpired) "征集已截止" else "距离征集截止：$daysRemaining 天",
+                                    if (isExpired) strings.dialog.contestEnded else strings.dialog.daysRemaining(daysRemaining),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isExpired) Color(0xFF64748B) else Color(0xFF991B1B)
                                 )
                             }
                             Text(
-                                "已投稿 ${activity.submissionCount} 件",
+                                strings.dialog.submissionCount(activity.submissionCount),
                                 fontSize = 11.sp,
                                 color = Color(0xFFDC2626)
                             )
@@ -180,11 +182,11 @@ fun ContestDialog(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("活动专属奖励", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF92400E))
+                                    Text(strings.dialog.prizeRewards, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF92400E))
                                 }
-                                Text("🥇 一等奖 (1名): \$2,000 UV耗材套餐 + eufyMake 旗舰圆柱治具套装", fontSize = 11.sp, color = Color(0xFF78350F))
-                                Text("🥈 二等奖 (3名): \$800 6色高附着力UV墨水补充包", fontSize = 11.sp, color = Color(0xFF78350F))
-                                Text("🥉 优秀创作者 (10名): 5,000 积分 + 官方认证创作者徽章", fontSize = 11.sp, color = Color(0xFF78350F))
+                                Text(strings.dialog.prize1, fontSize = 11.sp, color = Color(0xFF78350F))
+                                Text(strings.dialog.prize2, fontSize = 11.sp, color = Color(0xFF78350F))
+                                Text(strings.dialog.prize3, fontSize = 11.sp, color = Color(0xFF78350F))
                             }
                         }
                     }
@@ -201,7 +203,7 @@ fun ContestDialog(
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                     Text(
-                                        "参赛作品工艺心得与说明",
+                                        strings.dialog.submissionNotesTitle,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF1E293B)
@@ -209,7 +211,7 @@ fun ContestDialog(
                                     OutlinedTextField(
                                         value = notesText,
                                         onValueChange = { notesText = it },
-                                        placeholder = { Text("简述制作工艺 (如: 亚克力反打/2.4mm微浮雕/局部光油)...", fontSize = 11.sp) },
+                                        placeholder = { Text(strings.dialog.submissionNotesPlaceholder, fontSize = 11.sp) },
                                         minLines = 3,
                                         maxLines = 4,
                                         modifier = Modifier.fillMaxWidth(),
@@ -221,14 +223,14 @@ fun ContestDialog(
                                     )
                                     Button(
                                         onClick = {
-                                            onSubmitEntry(notesText.ifEmpty { "官方大赛优秀参赛作品" })
+                                            onSubmitEntry(notesText.ifEmpty { "Contest Entry" })
                                             submittedSuccessfully = true
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier.fillMaxWidth().height(38.dp)
                                     ) {
-                                        Text("确认提交参赛", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text(strings.dialog.confirmSubmitEntry, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
                             }
@@ -246,9 +248,9 @@ fun ContestDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("🎉 投稿成功！", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF15803D))
+                                    Text(strings.dialog.submitSuccess, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF15803D))
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("你的作品已进入官方评审队列，审核通过后将在大赛榜单展示", fontSize = 11.sp, color = Color(0xFF166534))
+                                    Text(strings.dialog.submitSuccessDetail, fontSize = 11.sp, color = Color(0xFF166534))
                                 }
                             }
                         }
@@ -278,7 +280,7 @@ fun ContestDialog(
                                 modifier = Modifier.fillMaxWidth().height(44.dp)
                             ) {
                                 Text(
-                                    if (isExpired) "大赛征集已截止" else "立即投稿参赛",
+                                    if (isExpired) strings.dialog.contestEnded else strings.community.contestJoinNow,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (isExpired) Color(0xFF94A3B8) else Color.White

@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.AppStrings
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Draft
 import com.eufymake.real.model.SubstrateShape
 import com.eufymake.real.model.GlossMode
@@ -52,6 +54,18 @@ enum class CraftType {
     RELIEF_TEXTURE
 }
 
+enum class InkMode(val isGloss: Boolean) {
+    COLOR_EMBOSS(false),
+    GLOSS_EMBOSS(true),
+    WHITE_AND_COLOR(false);
+
+    fun localizedTitle(strings: AppStrings): String = when (this) {
+        COLOR_EMBOSS -> strings.craft.inkColorEmboss
+        GLOSS_EMBOSS -> strings.craft.inkGlossEmboss
+        WHITE_AND_COLOR -> strings.craft.inkWhiteAndColor
+    }
+}
+
 @Composable
 fun CraftMode3DScreen(
     draft: Draft,
@@ -60,12 +74,13 @@ fun CraftMode3DScreen(
     onSpendCredits: (Int) -> Boolean,
     onReadyToPrint: (PrintMode, Float, GlossMode) -> Unit
 ) {
+    val strings = LocalStrings.current
     var selectedCraft by remember { mutableStateOf(CraftType.FLAT_EMBOSS) }
     var maxHeightMm by remember { mutableStateOf(2.5f) }
     var smoothness by remember { mutableStateOf(7) }
     var inkSavingPercent by remember { mutableStateOf(0) }
     var whiteUnderbaseChoke by remember { mutableStateOf(0.2f) }
-    var selectedInkMode by remember { mutableStateOf("彩色堆高") }
+    var selectedInkMode by remember { mutableStateOf(InkMode.COLOR_EMBOSS) }
     var showInkModeMenu by remember { mutableStateOf(false) }
 
     // Wireframe overlay toggle (from AnkerMake Frame 0080)
@@ -129,7 +144,7 @@ fun CraftMode3DScreen(
                     }
 
                     Text(
-                        text = "工艺模式",
+                        text = strings.craft.craftMode,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -227,7 +242,7 @@ fun CraftMode3DScreen(
                 ) {
                     Icon(
                         if (isPerspectiveTilted) Icons.Default.Refresh else Icons.Default.CropFree,
-                        contentDescription = if (isPerspectiveTilted) "2D俯视视角" else "3D透视视角",
+                        contentDescription = if (isPerspectiveTilted) strings.craft.view2D else strings.craft.view3D,
                         tint = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
@@ -258,7 +273,7 @@ fun CraftMode3DScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "正在计算 3D 微浮雕灰度高度场...",
+                            text = strings.craft.calculatingRelief,
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.8f)
                         )
@@ -340,7 +355,7 @@ fun CraftMode3DScreen(
                                     }
 
                                     // Specular gloss sheen overlay with dynamic light sweep shimmer
-                                    if (selectedInkMode.contains("光油")) {
+                                    if (selectedInkMode.isGloss) {
                                         val infiniteTransition = rememberInfiniteTransition()
                                         val sweepOffset by infiniteTransition.animateFloat(
                                             initialValue = -250f,
@@ -430,7 +445,7 @@ fun CraftMode3DScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "工艺模式",
+                            text = strings.craft.craftMode,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0F172A)
@@ -452,32 +467,32 @@ fun CraftMode3DScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CraftCard(
-                            title = "平面",
-                            subtitle = null,
+                            title = strings.craft.craftFlatTitle,
+                            subtitle = strings.craft.craftFlatSub,
                             badgeText = null,
                             isSelected = selectedCraft == CraftType.FLAT,
                             onClick = { selectedCraft = CraftType.FLAT },
                             modifier = Modifier.weight(1f)
                         )
                         CraftCard(
-                            title = "平面",
-                            subtitle = "堆高",
+                            title = strings.craft.craftPatternTitle,
+                            subtitle = strings.craft.craftPatternSub,
                             badgeText = null,
                             isSelected = selectedCraft == CraftType.FLAT_EMBOSS,
                             onClick = { selectedCraft = CraftType.FLAT_EMBOSS },
                             modifier = Modifier.weight(1f)
                         )
                         CraftCard(
-                            title = "图案",
-                            subtitle = "纹理",
+                            title = strings.craft.craftReliefTitle,
+                            subtitle = strings.craft.craftReliefSub,
                             badgeText = null,
                             isSelected = selectedCraft == CraftType.PATTERN_TEXTURE,
                             onClick = { selectedCraft = CraftType.PATTERN_TEXTURE },
                             modifier = Modifier.weight(1f)
                         )
                         CraftCard(
-                            title = "浮雕",
-                            subtitle = "纹理",
+                            title = strings.craft.craft3DEmbossTitle,
+                            subtitle = strings.craft.craft3DEmbossSub,
                             badgeText = "🪙 5",
                             isSelected = selectedCraft == CraftType.RELIEF_TEXTURE,
                             onClick = {
@@ -496,7 +511,7 @@ fun CraftMode3DScreen(
                         // 1. Ink Mode Selector
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                text = "墨水模式",
+                                text = strings.craft.inkMode,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFF64748B)
@@ -514,7 +529,7 @@ fun CraftMode3DScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = selectedInkMode,
+                                    text = selectedInkMode.localizedTitle(strings),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF1E293B)
@@ -532,7 +547,7 @@ fun CraftMode3DScreen(
                         if (selectedCraft != CraftType.FLAT) {
                             // 2. 凸起高度 (Max Height)
                             AppSliderRow(
-                                label = "最大高度",
+                                label = strings.craft.maxHeight,
                                 valueText = "${((maxHeightMm * 10).toInt() / 10f)} mm",
                                 isPill = true,
                                 value = maxHeightMm,
@@ -543,7 +558,7 @@ fun CraftMode3DScreen(
 
                             // 3. 平滑度 (Smoothness)
                             AppSliderRow(
-                                label = "平滑度",
+                                label = strings.craft.smoothness,
                                 valueText = smoothness.toString(),
                                 isPill = true,
                                 value = smoothness.toFloat(),
@@ -554,9 +569,9 @@ fun CraftMode3DScreen(
 
                             // 4. 节省油墨 (Ink Saving)
                             AppSliderRow(
-                                label = "节省油墨",
+                                label = strings.craft.inkSaving,
                                 hasHelpIcon = true,
-                                valueText = "$inkSavingPercent% 节省油墨",
+                                valueText = "$inkSavingPercent%",
                                 isPill = false,
                                 value = inkSavingPercent.toFloat(),
                                 min = 0f,
@@ -566,7 +581,7 @@ fun CraftMode3DScreen(
 
                             // 5. 白墨内缩 (White Underbase Choke) - Essential UV Setting!
                             AppSliderRow(
-                                label = "白墨内缩 (White Choke)",
+                                label = strings.craft.whiteChoke,
                                 hasHelpIcon = true,
                                 onHelpClick = { showChokeHelpDialog = true },
                                 valueText = "${((whiteUnderbaseChoke * 100).toInt() / 100f)} mm",
@@ -590,7 +605,7 @@ fun CraftMode3DScreen(
                                 CraftType.PATTERN_TEXTURE -> PrintMode.WHITE_ONLY
                                 CraftType.RELIEF_TEXTURE -> PrintMode.RELIEF_3D
                             }
-                            val glossMode = if (selectedInkMode.contains("光油")) GlossMode.FULL_GLOSS else GlossMode.NONE
+                            val glossMode = if (selectedInkMode.isGloss) GlossMode.FULL_GLOSS else GlossMode.NONE
                             onReadyToPrint(printMode, maxHeightMm, glossMode)
                         },
                         enabled = !isGeneratingTexture,
@@ -608,7 +623,7 @@ fun CraftMode3DScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "准备打印",
+                                text = strings.craft.readyToPrint,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -630,7 +645,7 @@ fun CraftMode3DScreen(
                         selectedCraft = CraftType.RELIEF_TEXTURE
                         isGeneratingTexture = true
                     } else {
-                        toastMessage = "AI 算力点数不足（需 5 点，当前 $availableAICredits 点），请前往积分商城获取"
+                        toastMessage = strings.craft.insufficientPoints(5, availableAICredits)
                     }
                 },
                 onDismiss = { showAIPointsDialog = false }
@@ -651,7 +666,8 @@ fun CraftMode3DScreen(
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
                     ) {
-                        listOf("彩色堆高", "光油（堆高）", "纯白底+彩色堆高").forEach { mode ->
+                        InkMode.values().forEach { mode ->
+                            val isSelected = selectedInkMode == mode
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -667,12 +683,12 @@ fun CraftMode3DScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = mode,
+                                        text = mode.localizedTitle(strings),
                                         fontSize = 15.sp,
-                                        fontWeight = if (selectedInkMode == mode) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (selectedInkMode == mode) BrandGreen else Color(0xFF1E293B)
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isSelected) BrandGreen else Color(0xFF1E293B)
                                     )
-                                    if (selectedInkMode == mode) {
+                                    if (isSelected) {
                                         Icon(Icons.Default.Check, contentDescription = null, tint = BrandGreen, modifier = Modifier.size(18.dp))
                                     }
                                 }
@@ -687,11 +703,10 @@ fun CraftMode3DScreen(
         if (showChokeHelpDialog) {
             AlertDialog(
                 onDismissRequest = { showChokeHelpDialog = false },
-                title = { Text("白墨内缩 (White Choke) 说明", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
+                title = { Text(strings.craft.whiteChoke, fontSize = 15.sp, fontWeight = FontWeight.Bold) },
                 text = {
                     Text(
-                        "在UV印刷亚克力或透明介质时，高黏度白墨在CMYK底层固化会产生约 0.1~0.3mm 的物理边缘扩散。" +
-                        "通过设定 0.2mm 内缩量，底层白墨将向内收拢，彻底杜绝外围露出毛边白边。",
+                        text = strings.craft.whiteChokeHelp,
                         fontSize = 12.sp,
                         color = Color(0xFF475569),
                         lineHeight = 17.sp
@@ -699,7 +714,7 @@ fun CraftMode3DScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { showChokeHelpDialog = false }) {
-                        Text("知道了", color = BrandGreen, fontWeight = FontWeight.Bold)
+                        Text(strings.common.done, color = BrandGreen, fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -745,23 +760,23 @@ fun CraftMode3DScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "基材工艺参数规范",
+                                text = strings.craft.substrateSpec,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1A1A1A)
                             )
                             IconButton(onClick = { showSubstrateInfoDialog = false }, modifier = Modifier.size(28.dp)) {
-                                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color(0xFF64748B))
+                                Icon(Icons.Default.Close, contentDescription = strings.common.close, tint = Color(0xFF64748B))
                             }
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         listOf(
-                            "基材材质" to draft.substrate.nameZh,
-                            "打印范围" to "${draft.substrate.widthMm.toInt()} × ${draft.substrate.heightMm.toInt()} mm",
-                            "形状模式" to if (draft.substrate.shape == SubstrateShape.CIRCLE) "圆形基底" else "矩形平板",
-                            "推荐浮雕深度" to "${draft.substrate.defaultReliefDepth} mm",
-                            "安全抬升高度" to "2.5 mm",
-                            "固化灯功率" to "UV LED 12W 100%"
+                            strings.substrate.material to draft.substrate.displayName,
+                            strings.device.workArea to "${draft.substrate.widthMm.toInt()} × ${draft.substrate.heightMm.toInt()} mm",
+                            strings.craft.layerMode to if (draft.substrate.shape == SubstrateShape.CIRCLE) "Circle" else "Rectangle",
+                            strings.craft.maxHeight to "${draft.substrate.defaultReliefDepth} mm",
+                            strings.craft.focus to "2.5 mm",
+                            strings.craft.power to "UV LED 12W 100%"
                         ).forEach { (k, v) ->
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
@@ -778,7 +793,7 @@ fun CraftMode3DScreen(
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.fillMaxWidth().height(42.dp)
                         ) {
-                            Text("确定", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(strings.common.confirm, color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -1086,6 +1101,7 @@ private fun AIPointsConsumptionDialog(
     var dontRemindAgain by remember { mutableStateOf(false) }
     val hasEnoughCredits = availableCredits >= 5
 
+    val strings = LocalStrings.current
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
@@ -1100,7 +1116,7 @@ private fun AIPointsConsumptionDialog(
                     .padding(24.dp)
             ) {
                 Text(
-                    text = "此功能将消耗 5 点 AI 算力点数。",
+                    text = strings.craft.aiPointsCost,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A1A1A)
@@ -1109,7 +1125,7 @@ private fun AIPointsConsumptionDialog(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "当前可用余额：$availableCredits 点",
+                    text = "${strings.profile.cloudSync}: $availableCredits",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = if (hasEnoughCredits) Color(0xFF15803D) else Color(0xFFDC2626)
@@ -1140,7 +1156,7 @@ private fun AIPointsConsumptionDialog(
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "下次不再提醒",
+                        text = strings.craft.doNotRemind,
                         fontSize = 13.sp,
                         color = Color(0xFF1E293B)
                     )
@@ -1162,7 +1178,7 @@ private fun AIPointsConsumptionDialog(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF1E293B))
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("取消", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                            Text(strings.common.cancel, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -1180,7 +1196,7 @@ private fun AIPointsConsumptionDialog(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                if (hasEnoughCredits) "确认" else "点数不足",
+                                if (hasEnoughCredits) strings.common.confirm else strings.craft.insufficientPointsBtn,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (hasEnoughCredits) Color.White else Color(0xFF94A3B8)

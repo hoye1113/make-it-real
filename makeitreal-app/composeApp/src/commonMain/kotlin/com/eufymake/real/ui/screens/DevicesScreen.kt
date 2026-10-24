@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.DeviceInfo
 import com.eufymake.real.model.DeviceStatus
 import com.eufymake.real.ui.components.InkBar
@@ -33,6 +34,7 @@ fun DevicesScreen(
     onToggleAirFiltration: () -> Unit,
     onCancelJob: () -> Unit
 ) {
+    val strings = LocalStrings.current
     var showMaintenanceDialog by remember { mutableStateOf(false) }
     var showCancelConfirmDialog by remember { mutableStateOf(false) }
 
@@ -53,7 +55,7 @@ fun DevicesScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "设备控制台",
+                        text = strings.device.devicesTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = BrandPrimary
@@ -74,7 +76,7 @@ fun DevicesScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "已连接 Wi-Fi 5G",
+                                text = strings.device.wifiConnected,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF15803D)
@@ -139,13 +141,13 @@ fun DevicesScreen(
                                 else -> Color(0xFF64748B)
                             }
                             val statusZh = when (deviceInfo.status) {
-                                DeviceStatus.PRINTING -> "UV打印中"
-                                DeviceStatus.UV_CURING -> "UV固化中"
-                                DeviceStatus.PREPARING -> "预热准备中"
-                                DeviceStatus.IDLE -> "待机空闲"
-                                DeviceStatus.PAUSED -> "打印已暂停"
-                                DeviceStatus.COMPLETED -> "打印已完成"
-                                DeviceStatus.OFFLINE -> "设备离线"
+                                DeviceStatus.PRINTING -> strings.device.statusPrinting
+                                DeviceStatus.UV_CURING -> strings.device.statusUvCuring
+                                DeviceStatus.PREPARING -> strings.device.statusPreparing
+                                DeviceStatus.IDLE -> strings.device.statusIdle
+                                DeviceStatus.PAUSED -> strings.device.statusPaused
+                                DeviceStatus.COMPLETED -> strings.device.statusCompleted
+                                DeviceStatus.OFFLINE -> strings.device.statusOffline
                             }
                             Box(
                                 modifier = Modifier
@@ -170,7 +172,7 @@ fun DevicesScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column {
-                                Text(text = "平台温度", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(text = strings.device.bedTempLabel, fontSize = 11.sp, color = Color(0xFF64748B))
                                 Text(
                                     text = "${deviceInfo.bedTemperatureC}°C",
                                     fontSize = 14.sp,
@@ -179,7 +181,7 @@ fun DevicesScreen(
                                 )
                             }
                             Column {
-                                Text(text = "UV LED 固化灯", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(text = strings.device.uvLedLamp, fontSize = 11.sp, color = Color(0xFF64748B))
                                 Text(
                                     text = "${deviceInfo.uvLampTemperatureC}°C",
                                     fontSize = 14.sp,
@@ -188,9 +190,9 @@ fun DevicesScreen(
                                 )
                             }
                             Column {
-                                Text(text = "旋转治具模组", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text(text = strings.device.rotaryModule, fontSize = 11.sp, color = Color(0xFF64748B))
                                 Text(
-                                    text = "已装配 (就绪)",
+                                    text = strings.device.installedReady,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF059669)
@@ -220,14 +222,14 @@ fun DevicesScreen(
                             ) {
                                 Column {
                                     Text(
-                                        text = "正在执行 UV 喷印任务",
+                                        text = strings.device.executingJob,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = BrandAccent,
                                         letterSpacing = 1.sp
                                     )
                                     Text(
-                                        text = deviceInfo.currentJobName ?: "正在多层堆叠触感微浮雕...",
+                                        text = deviceInfo.currentJobName ?: strings.device.defaultJobName,
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = BrandPrimary
@@ -262,7 +264,7 @@ fun DevicesScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "${deviceInfo.currentJobProgress.toInt()}% 已完成",
+                                    text = strings.device.jobProgress(deviceInfo.currentJobProgress.toInt()),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = BrandAccent
@@ -271,10 +273,10 @@ fun DevicesScreen(
                                     val totalSec = deviceInfo.timeRemainingSeconds
                                     val mins = totalSec / 60
                                     val secs = totalSec % 60
-                                    if (mins > 0) "${mins}分${secs}秒" else "${secs}秒"
+                                    if (mins > 0) strings.device.timeFormat(mins, secs) else strings.device.secsOnly(secs)
                                 }
                                 Text(
-                                    text = "预计剩余: $remainingText",
+                                    text = strings.device.timeRemaining(remainingText),
                                     fontSize = 12.sp,
                                     color = Color(0xFF64748B)
                                 )
@@ -301,13 +303,13 @@ fun DevicesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "6色 UV 环保墨水余量",
+                                text = strings.device.sixColorInk,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = BrandPrimary
                             )
                             Text(
-                                text = "CMYK + 白墨 + 光油",
+                                text = strings.device.inkSubtext,
                                 fontSize = 11.sp,
                                 color = Color(0xFF64748B)
                             )
@@ -355,8 +357,8 @@ fun DevicesScreen(
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
-                                    Text("喷头与墨路维护中心", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
-                                    Text("自检压电喷孔与负压平衡", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.dialog.maintenanceCenterTitle, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
+                                    Text(strings.device.maintenanceCenterSubtitle, fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                             }
 
@@ -367,7 +369,7 @@ fun DevicesScreen(
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                                 modifier = Modifier.height(32.dp)
                             ) {
-                                Text("进入维护", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(strings.device.enterMaintenance, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
 
@@ -381,8 +383,8 @@ fun DevicesScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("废墨收集垫占用: 24%", fontSize = 11.sp, color = Color(0xFF475569))
-                            Text("状态正常 (可再喷印约120次)", fontSize = 10.sp, color = Color(0xFF16A34A), fontWeight = FontWeight.SemiBold)
+                            Text(strings.device.wastePadUsage(24), fontSize = 11.sp, color = Color(0xFF475569))
+                            Text(strings.device.wastePadStatusOk, fontSize = 10.sp, color = Color(0xFF16A34A), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -392,7 +394,7 @@ fun DevicesScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "舱体环控系统",
+                        text = strings.device.chamberControl,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = BrandPrimary
@@ -418,12 +420,12 @@ fun DevicesScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "内置对齐补光灯",
+                                    text = strings.device.alignmentLight,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = if (deviceInfo.isChamberLightOn) "开启 (4500K 中性白光，高显色对位)" else "关闭",
+                                    text = if (deviceInfo.isChamberLightOn) strings.device.alignmentLightOn else strings.device.alignmentLightOff,
                                     fontSize = 11.sp,
                                     color = Color(0xFF64748B)
                                 )
@@ -455,12 +457,12 @@ fun DevicesScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "HEPA 与活性炭 VOC 循环吸附",
+                                    text = strings.device.airFiltration,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = if (deviceInfo.isAirFiltrationActive) "强效运转中 (99.8% UV单体气味净化)" else "待机",
+                                    text = if (deviceInfo.isAirFiltrationActive) strings.device.airFiltrationActive else strings.device.airFiltrationIdle,
                                     fontSize = 11.sp,
                                     color = Color(0xFF64748B)
                                 )
@@ -480,11 +482,11 @@ fun DevicesScreen(
             AlertDialog(
                 onDismissRequest = { showCancelConfirmDialog = false },
                 title = {
-                    Text("终止当前打印任务？", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                    Text(strings.device.stopJobTitle, fontWeight = FontWeight.Bold, fontSize = 17.sp)
                 },
                 text = {
                     Text(
-                        "当前 UV 喷印与多层固化作业正在进行中，强行中止将导致当前基材报废且无法恢复。确定要停止打印机运转吗？",
+                        strings.device.stopJobDesc,
                         fontSize = 13.sp,
                         color = Color(0xFF64748B)
                     )
@@ -496,12 +498,12 @@ fun DevicesScreen(
                             onCancelJob()
                         }
                     ) {
-                        Text("确定终止", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+                        Text(strings.device.confirmStop, color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showCancelConfirmDialog = false }) {
-                        Text("继续作业", color = Color(0xFF1E293B))
+                        Text(strings.device.continueJob, color = Color(0xFF1E293B))
                     }
                 },
                 shape = RoundedCornerShape(16.dp),

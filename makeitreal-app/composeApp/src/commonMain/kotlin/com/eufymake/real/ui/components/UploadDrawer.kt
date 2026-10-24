@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.model.LayerType
 import com.eufymake.real.ui.theme.BrandBlack
@@ -44,30 +45,31 @@ fun UploadDrawer(
     onDismiss: () -> Unit,
     onSelectImage: (CanvasLayer) -> Unit
 ) {
+    val strings = LocalStrings.current
     var selectedTab by remember { mutableStateOf(0) }
 
     val samplePhotos = listOf(
-        UploadSamplePhoto("婚礼手绘纪念画", "work_1.webp", 2.2f, Color(0xFFD4A373)),
-        UploadSamplePhoto("伴娘邀请卡", "work_2.webp", 1.8f, Color(0xFFDDA15E)),
-        UploadSamplePhoto("暗黑恐怖油画", "work_3.webp", 2.5f, Color(0xFFBC6C25)),
-        UploadSamplePhoto("舞者火漆印章", "work_4.webp", 2.8f, Color(0xFF9B2226)),
-        UploadSamplePhoto("深海章鱼马克杯", "work_5.webp", 2.0f, Color(0xFF6B2D5C)),
-        UploadSamplePhoto("彩窗蝙蝠磁贴", "work_6.webp", 2.4f, Color(0xFF4A4E69)),
-        UploadSamplePhoto("赛博骷髅全息贴纸", "work_7.webp", 1.5f, Color(0xFFee0979)),
-        UploadSamplePhoto("万圣女巫猫饰品", "Halloween Witch Cat Decor Skill.webp", 2.6f, Color(0xFF2C3E50)),
-        UploadSamplePhoto("月光女巫浮雕", "Moonlight Witch Ornament Skill.webp", 2.8f, Color(0xFF0F2027)),
-        UploadSamplePhoto("植物骷髅艺术", "Floral Halloween Skeleton Skill.webp", 2.4f, Color(0xFF134E5E)),
-        UploadSamplePhoto("哥特万圣节", "Whimsical Gothic Halloween Skill.webp", 2.2f, Color(0xFF4A4E69)),
-        UploadSamplePhoto("万圣节家族门牌", "Halloween Family Door Hanger Skill.webp", 2.5f, Color(0xFFB92B27))
+        UploadSamplePhoto(strings.canvas.sampleWeddingArt, "work_1.webp", 2.2f, Color(0xFFD4A373)),
+        UploadSamplePhoto(strings.canvas.sampleBridesmaidCard, "work_2.webp", 1.8f, Color(0xFFDDA15E)),
+        UploadSamplePhoto(strings.canvas.sampleDarkGothic, "work_3.webp", 2.5f, Color(0xFFBC6C25)),
+        UploadSamplePhoto(strings.canvas.sampleDancerSeal, "work_4.webp", 2.8f, Color(0xFF9B2226)),
+        UploadSamplePhoto(strings.canvas.sampleOctopusMug, "work_5.webp", 2.0f, Color(0xFF6B2D5C)),
+        UploadSamplePhoto(strings.canvas.sampleStainedGlassBat, "work_6.webp", 2.4f, Color(0xFF4A4E69)),
+        UploadSamplePhoto(strings.canvas.sampleCyberSkull, "work_7.webp", 1.5f, Color(0xFFee0979)),
+        UploadSamplePhoto(strings.canvas.sampleWitchCatDecor, "Halloween Witch Cat Decor Skill.webp", 2.6f, Color(0xFF2C3E50)),
+        UploadSamplePhoto(strings.canvas.sampleMoonlightWitch, "Moonlight Witch Ornament Skill.webp", 2.8f, Color(0xFF0F2027)),
+        UploadSamplePhoto(strings.canvas.sampleFloralSkeleton, "Floral Halloween Skeleton Skill.webp", 2.4f, Color(0xFF134E5E)),
+        UploadSamplePhoto(strings.canvas.sampleGothicHalloween, "Whimsical Gothic Halloween Skill.webp", 2.2f, Color(0xFF4A4E69)),
+        UploadSamplePhoto(strings.canvas.sampleHalloweenDoor, "Halloween Family Door Hanger Skill.webp", 2.5f, Color(0xFFB92B27))
     )
 
     val localAlbumPhotos = listOf(
-        UploadSamplePhoto("相册_20261023_01", "dinosaur_clock_relief.webp", 2.5f, Color(0xFF2C3E50)),
-        UploadSamplePhoto("相册_夜光浮雕", "work_1.webp", 2.0f, Color(0xFFD4A373)),
-        UploadSamplePhoto("截图_几何徽章", "work_2.webp", 1.8f, Color(0xFFDDA15E)),
-        UploadSamplePhoto("下载_复古油画", "work_3.webp", 2.5f, Color(0xFFBC6C25)),
-        UploadSamplePhoto("自拍_艺术转印", "work_4.webp", 2.8f, Color(0xFF9B2226)),
-        UploadSamplePhoto("微距_纹理细节", "work_5.webp", 2.0f, Color(0xFF6B2D5C))
+        UploadSamplePhoto(strings.canvas.albumPhoto1, "dinosaur_clock_relief.webp", 2.5f, Color(0xFF2C3E50)),
+        UploadSamplePhoto(strings.canvas.albumGlowRelief, "work_1.webp", 2.0f, Color(0xFFD4A373)),
+        UploadSamplePhoto(strings.canvas.albumBadge, "work_2.webp", 1.8f, Color(0xFFDDA15E)),
+        UploadSamplePhoto(strings.canvas.albumVintageArt, "work_3.webp", 2.5f, Color(0xFFBC6C25)),
+        UploadSamplePhoto(strings.canvas.albumSelfieTransfer, "work_4.webp", 2.8f, Color(0xFF9B2226)),
+        UploadSamplePhoto(strings.canvas.albumMacroTexture, "work_5.webp", 2.0f, Color(0xFF6B2D5C))
     )
 
     val displayPhotos = if (selectedTab == 0) samplePhotos else localAlbumPhotos
@@ -116,7 +118,7 @@ fun UploadDrawer(
                             modifier = Modifier.clickable { selectedTab = 0 }
                         ) {
                             Text(
-                                text = "社区素材库",
+                                text = strings.canvas.tabCommunityAssets,
                                 fontSize = 15.sp,
                                 fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
                                 color = if (selectedTab == 0) Color(0xFF1A1A1A) else Color(0xFF8E8E93)
@@ -138,7 +140,7 @@ fun UploadDrawer(
                             modifier = Modifier.clickable { selectedTab = 1 }
                         ) {
                             Text(
-                                text = "本地相册",
+                                text = strings.canvas.tabLocalAlbum,
                                 fontSize = 15.sp,
                                 fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
                                 color = if (selectedTab == 1) Color(0xFF1A1A1A) else Color(0xFF8E8E93)
@@ -186,13 +188,13 @@ fun UploadDrawer(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.FolderOpen,
-                            contentDescription = "Import",
+                            contentDescription = strings.canvas.importFromComputer,
                             tint = Color(0xFF1A1A1A),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "从电脑导入图片文件 (PNG / JPG / WebP)",
+                            text = "${strings.canvas.importFromComputer} (PNG / JPG / WebP)",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1A1A1A)

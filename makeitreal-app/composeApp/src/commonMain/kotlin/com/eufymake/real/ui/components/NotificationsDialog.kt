@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.eufymake.real.api.NotificationDto
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.ui.theme.BrandGreen
 
 @Composable
@@ -29,14 +30,15 @@ fun NotificationsDialog(
     onMarkAllRead: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedFilter by remember { mutableStateOf("全部") }
+    val strings = LocalStrings.current
+    var selectedFilterIndex by remember { mutableStateOf(0) }
 
     val filteredList = notifications.filter {
-        when (selectedFilter) {
-            "全部" -> true
-            "点赞" -> it.type == "LIKE"
-            "评论" -> it.type == "COMMENT"
-            "系统" -> it.type == "SYSTEM" || it.type == "CONTEST"
+        when (selectedFilterIndex) {
+            0 -> true
+            1 -> it.type == "LIKE"
+            2 -> it.type == "COMMENT"
+            3 -> it.type == "SYSTEM" || it.type == "CONTEST"
             else -> true
         }
     }
@@ -59,7 +61,7 @@ fun NotificationsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "消息通知",
+                        strings.dialog.notifications,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
@@ -67,7 +69,7 @@ fun NotificationsDialog(
 
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(
-                            "全部已读",
+                            strings.dialog.markAllRead,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = BrandGreen,
@@ -86,13 +88,14 @@ fun NotificationsDialog(
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf("全部", "点赞", "评论", "系统").forEach { tab ->
-                        val isSelected = selectedFilter == tab
+                    val tabs = listOf(strings.dialog.notifAll, strings.dialog.notifLikes, strings.dialog.notifComments, strings.dialog.notifSystem)
+                    tabs.forEachIndexed { idx, tab ->
+                        val isSelected = selectedFilterIndex == idx
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (isSelected) Color(0xFF0F172A) else Color(0xFFF1F5F9))
-                                .clickable { selectedFilter = tab }
+                                .clickable { selectedFilterIndex = idx }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -119,7 +122,7 @@ fun NotificationsDialog(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null, tint = Color(0xFFCBD5E1), modifier = Modifier.size(44.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("暂无此类通知", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                            Text(strings.dialog.noNotifications, fontSize = 12.sp, color = Color(0xFF94A3B8))
                         }
                     }
                 } else {
@@ -207,7 +210,7 @@ fun NotificationsDialog(
 
                                         val notifTimeAgo = remember(item.timestamp) {
                                             val mins = ((System.currentTimeMillis() - item.timestamp) / 60000).coerceAtLeast(1)
-                                            if (mins < 60) "${mins}分钟前" else "${mins / 60}小时前"
+                                            if (mins < 60) strings.common.minutesAgo(mins) else strings.common.hoursAgo(mins / 60)
                                         }
                                         Text(
                                             notifTimeAgo,

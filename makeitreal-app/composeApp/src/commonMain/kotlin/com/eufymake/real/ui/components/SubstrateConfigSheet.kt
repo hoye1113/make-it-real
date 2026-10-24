@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Substrate
 import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
@@ -34,6 +35,7 @@ fun SubstrateConfigSheet(
     onDismiss: () -> Unit,
     onConfirmCreate: (Substrate) -> Unit
 ) {
+    val strings = LocalStrings.current
     var width by remember { mutableStateOf(substrate.widthMm.toInt().toString()) }
     var height by remember { mutableStateOf(substrate.heightMm.toInt().toString()) }
     var thickness by remember { mutableStateOf(substrate.thicknessMm.toInt().toString()) }
@@ -41,7 +43,14 @@ fun SubstrateConfigSheet(
     var selectedPreset by remember { mutableStateOf(substrate.presets.firstOrNull() ?: "") }
     var selectedColorIndex by remember { mutableStateOf(0) }
 
-    val materialOptions = listOf("亚克力", "木材", "金属", "PVC", "陶瓷", "玻璃")
+    val materialOptions = listOf(
+        strings.substrate.matAcrylic,
+        strings.substrate.matWood,
+        strings.substrate.matMetal,
+        strings.substrate.matPvc,
+        strings.substrate.matCeramic,
+        strings.substrate.matGlass
+    )
     val colorSwatches = listOf(
         Color(0xFFF1F5F9), // Translucent white / clear
         Color(0xFFFFFFFF), // Solid white
@@ -93,7 +102,7 @@ fun SubstrateConfigSheet(
                         )
                     }
                     Text(
-                        text = substrate.nameZh,
+                        text = substrate.displayName,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A),
@@ -136,25 +145,25 @@ fun SubstrateConfigSheet(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             DimensionInputBox(
-                                label = "宽度 *",
+                                label = "${strings.substrate.width} *",
                                 value = width,
                                 onValueChange = { width = it.filter { c -> c.isDigit() } },
                                 modifier = Modifier.weight(1f)
                             )
                             DimensionInputBox(
-                                label = "长度 *",
+                                label = "${strings.substrate.length} *",
                                 value = height,
                                 onValueChange = { height = it.filter { c -> c.isDigit() } },
                                 modifier = Modifier.weight(1f)
                             )
                             DimensionInputBox(
-                                label = "厚度",
+                                label = strings.substrate.thickness,
                                 value = thickness,
                                 onValueChange = { thickness = it.filter { c -> c.isDigit() } },
                                 modifier = Modifier.weight(1f)
                             )
                             DimensionInputBox(
-                                label = "单位",
+                                label = strings.substrate.unit,
                                 value = "mm",
                                 onValueChange = {},
                                 isReadOnly = true,
@@ -172,7 +181,7 @@ fun SubstrateConfigSheet(
                             // Material Dropdown
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "材质",
+                                    strings.substrate.material,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color(0xFF8E8E93)
@@ -215,7 +224,7 @@ fun SubstrateConfigSheet(
                             // Color Swatches
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "颜色",
+                                    strings.substrate.color,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color(0xFF8E8E93)
@@ -255,7 +264,7 @@ fun SubstrateConfigSheet(
                     if (substrate.presets.isNotEmpty()) {
                         item {
                             Text(
-                                "预设规格",
+                                strings.substrate.presetSize,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1A1A1A)
@@ -277,18 +286,18 @@ fun SubstrateConfigSheet(
                                     .clickable {
                                         selectedPreset = preset
                                         when (preset) {
-                                            "Acrylic Sheet" -> { width = "300"; height = "400"; thickness = "2"; selectedMaterial = "亚克力" }
-                                            "Wood Sheet" -> { width = "300"; height = "400"; thickness = "3"; selectedMaterial = "木材" }
-                                            "Metal Sheet" -> { width = "200"; height = "300"; thickness = "1"; selectedMaterial = "金属" }
-                                            "iPhone 16" -> { width = "72"; height = "148"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "iPhone 16 Plus" -> { width = "78"; height = "161"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "iPhone 16 Pro" -> { width = "72"; height = "150"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "iPhone 16 Pro Max" -> { width = "78"; height = "163"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "iPhone 17" -> { width = "72"; height = "149"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "iPhone 17 Pro" -> { width = "72"; height = "151"; thickness = "8"; selectedMaterial = "亚克力" }
-                                            "AirPods 4 Charging Case" -> { width = "50"; height = "46"; thickness = "21"; selectedMaterial = "PVC" }
-                                            "AirPods Pro 3 Charging Case" -> { width = "60"; height = "45"; thickness = "22"; selectedMaterial = "PVC" }
-                                            "Switch Joy-Con Controller" -> { width = "36"; height = "102"; thickness = "28"; selectedMaterial = "PVC" }
+                                            "Acrylic Sheet" -> { width = "300"; height = "400"; thickness = "2"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "Wood Sheet" -> { width = "300"; height = "400"; thickness = "3"; selectedMaterial = strings.substrate.matWood }
+                                            "Metal Sheet" -> { width = "200"; height = "300"; thickness = "1"; selectedMaterial = strings.substrate.matMetal }
+                                            "iPhone 16" -> { width = "72"; height = "148"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "iPhone 16 Plus" -> { width = "78"; height = "161"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "iPhone 16 Pro" -> { width = "72"; height = "150"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "iPhone 16 Pro Max" -> { width = "78"; height = "163"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "iPhone 17" -> { width = "72"; height = "149"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "iPhone 17 Pro" -> { width = "72"; height = "151"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
+                                            "AirPods 4 Charging Case" -> { width = "50"; height = "46"; thickness = "21"; selectedMaterial = strings.substrate.matPvc }
+                                            "AirPods Pro 3 Charging Case" -> { width = "60"; height = "45"; thickness = "22"; selectedMaterial = strings.substrate.matPvc }
+                                            "Switch Joy-Con Controller" -> { width = "36"; height = "102"; thickness = "28"; selectedMaterial = strings.substrate.matPvc }
                                         }
                                     }
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -341,7 +350,7 @@ fun SubstrateConfigSheet(
                     colors = ButtonDefaults.buttonColors(containerColor = BrandBlack)
                 ) {
                     Text(
-                        "创作",
+                        strings.nav.create,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

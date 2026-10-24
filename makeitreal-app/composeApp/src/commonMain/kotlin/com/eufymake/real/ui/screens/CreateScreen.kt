@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Substrate
 import com.eufymake.real.ui.components.SubstrateConfigSheet
 import com.eufymake.real.ui.theme.BrandBlack
@@ -40,7 +41,7 @@ data class InspirationCardMeta(
     val likes: Int,
     val imageName: String,
     val substrateId: String,
-    val category: String
+    val categoryIndex: Int
 )
 
 @Composable
@@ -54,27 +55,33 @@ fun CreateScreen(
     isDeviceConnected: Boolean = true,
     onOpenDevices: () -> Unit = {}
 ) {
+    val strings = LocalStrings.current
     var substrateToConfigure by remember { mutableStateOf<Substrate?>(null) }
     var selectedFilterIndex by remember { mutableStateOf(0) }
 
-    val filterPills = listOf("全部", "3D纹理", "节日快乐", "个性化礼物", "艺术家日常")
+    val filterPills = listOf(
+        strings.community.catAll,
+        strings.community.cat3DTexture,
+        strings.community.catHoliday,
+        strings.community.catGifts,
+        strings.community.catArtistDaily
+    )
 
     val allInspirationItems = listOf(
-        InspirationCardMeta("Wedding Hand-drawn Commemorative", "Sean", 1530, "work_1.webp", "sheet", "个性化礼物"),
-        InspirationCardMeta("Bridesmaid Invitation Card", "Katniss_e", 724, "work_2.webp", "card", "个性化礼物"),
-        InspirationCardMeta("Horror Cons 6x8 Canvas", "Jayleecustoms", 1089, "work_3.webp", "canvas", "3D纹理"),
-        InspirationCardMeta("Dancer Wax Seal Tactile Stamp", "Katniss_e", 412, "work_4.webp", "coaster", "3D纹理"),
-        InspirationCardMeta("Octopus Deep Ocean 3D Mug", "AlexMaker", 890, "work_5.webp", "cup", "3D纹理"),
-        InspirationCardMeta("Stained Glass Prism Magnet", "GothicArt", 610, "work_6.webp", "magnet", "艺术家日常"),
-        InspirationCardMeta("Moonlight Witch Ornament Skill", "WhiskersDesign", 1205, "Moonlight Witch Ornament Skill.webp", "coaster", "节日快乐"),
-        InspirationCardMeta("Floral Halloween Skeleton Relief", "Katniss_e", 842, "Floral Halloween Skeleton Skill.webp", "sheet", "艺术家日常")
+        InspirationCardMeta("Wedding Hand-drawn Commemorative", "Sean", 1530, "work_1.webp", "sheet", 3),
+        InspirationCardMeta("Bridesmaid Invitation Card", "Katniss_e", 724, "work_2.webp", "card", 3),
+        InspirationCardMeta("Horror Cons 6x8 Canvas", "Jayleecustoms", 1089, "work_3.webp", "canvas", 1),
+        InspirationCardMeta("Dancer Wax Seal Tactile Stamp", "Katniss_e", 412, "work_4.webp", "coaster", 1),
+        InspirationCardMeta("Octopus Deep Ocean 3D Mug", "AlexMaker", 890, "work_5.webp", "cup", 1),
+        InspirationCardMeta("Stained Glass Prism Magnet", "GothicArt", 610, "work_6.webp", "magnet", 4),
+        InspirationCardMeta("Moonlight Witch Ornament Skill", "WhiskersDesign", 1205, "Moonlight Witch Ornament Skill.webp", "coaster", 2),
+        InspirationCardMeta("Floral Halloween Skeleton Relief", "Katniss_e", 842, "Floral Halloween Skeleton Skill.webp", "sheet", 4)
     )
 
     val displayedItems = if (selectedFilterIndex == 0) {
         allInspirationItems
     } else {
-        val selectedCat = filterPills[selectedFilterIndex]
-        allInspirationItems.filter { it.category == selectedCat }
+        allInspirationItems.filter { it.categoryIndex == selectedFilterIndex }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF7F8FA))) {
@@ -91,7 +98,7 @@ fun CreateScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "创作",
+                        text = strings.nav.create,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF1A1A1A)
@@ -115,7 +122,7 @@ fun CreateScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = if (isDeviceConnected) "$deviceName (就绪)" else "没有设备",
+                                text = if (isDeviceConnected) strings.canvas.deviceReady(deviceName) else strings.canvas.noDevice,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF1A1A1A)
@@ -125,7 +132,7 @@ fun CreateScreen(
                 }
             }
 
-            // 2. "自由创作" Hero Card (Frame 0010)
+            // 2. Free Design Hero Card
             item {
                 Surface(
                     modifier = Modifier
@@ -145,14 +152,14 @@ fun CreateScreen(
                     ) {
                         Column {
                             Text(
-                                text = "自由创作",
+                                text = strings.canvas.freeDesign,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1A1A1A)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "从打印板上开始自由起稿",
+                                text = strings.canvas.freeDesignDesc,
                                 fontSize = 12.sp,
                                 color = Color(0xFF8E8E93)
                             )
@@ -199,13 +206,13 @@ fun CreateScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "选择基材",
+                                    text = strings.canvas.selectSubstrate,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1A1A1A)
                                 )
                                 Text(
-                                    text = "查看全部",
+                                    text = strings.common.viewAll,
                                     fontSize = 12.sp,
                                     color = BrandGreen,
                                     fontWeight = FontWeight.Medium,
@@ -214,7 +221,7 @@ fun CreateScreen(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "从选择一个基材开始，在基材上做设计",
+                                text = strings.canvas.selectSubstrateDesc,
                                 fontSize = 11.sp,
                                 color = Color(0xFF8E8E93)
                             )
@@ -355,7 +362,7 @@ fun CreateScreen(
                                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                                             ) {
                                                 Text(
-                                                    text = "做同款",
+                                                    text = strings.canvas.makeSimilar,
                                                     fontSize = 9.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = Color.White

@@ -27,6 +27,9 @@ data class Substrate(
     val defaultMaterial: String = "亚克力",
     val presets: List<String> = emptyList()
 ) {
+    val displayName: String
+        get() = if (com.eufymake.real.i18n.LanguageManager.currentLanguage == com.eufymake.real.i18n.AppLanguage.ZH) nameZh else name
+
     val aspectRatio: Float
         get() = if (heightMm > 0) widthMm / heightMm else 1f
 

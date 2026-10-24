@@ -20,21 +20,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.model.LayerType
 import com.eufymake.real.ui.theme.BrandGreen
+
+data class SkillItemMeta(
+    val title: String,
+    val subtitle: String,
+    val depth: Float,
+    val colors: List<Color>
+)
 
 @Composable
 fun SkillsDrawer(
     onDismiss: () -> Unit,
     onApplySkill: (String, Float) -> Unit
 ) {
+    val strings = LocalStrings.current
+
     val skills = listOf(
-        Triple("东京立体霓虹", "3D Tokyo Neon Typography", 2.5f) to listOf(Color(0xFFE11D48), Color(0xFFFB7185)),
-        Triple("美式复古分镜", "American Comic Book Style", 1.8f) to listOf(Color(0xFFEA580C), Color(0xFFFBBF24)),
-        Triple("3D浮雕木雕", "Tactile Wooden Relief Texture", 3.0f) to listOf(Color(0xFF78350F), Color(0xFFB45309)),
-        Triple("彩色琉璃花窗", "Stained Glass 3D Varnish", 2.0f) to listOf(Color(0xFF0284C7), Color(0xFF38BDF8)),
-        Triple("微缩粘土定格", "Plasticine Clay 3D Miniature", 2.2f) to listOf(Color(0xFF059669), Color(0xFF34D399))
+        SkillItemMeta(strings.dialog.skillTokyoNeon, "3D Tokyo Neon Typography", 2.5f, listOf(Color(0xFFE11D48), Color(0xFFFB7185))),
+        SkillItemMeta(strings.dialog.skillVintageComic, "American Comic Book Style", 1.8f, listOf(Color(0xFFEA580C), Color(0xFFFBBF24))),
+        SkillItemMeta(strings.dialog.skillWoodCarving, "Tactile Wooden Relief Texture", 3.0f, listOf(Color(0xFF78350F), Color(0xFFB45309))),
+        SkillItemMeta(strings.dialog.skillStainedGlass, "Stained Glass 3D Varnish", 2.0f, listOf(Color(0xFF0284C7), Color(0xFF38BDF8))),
+        SkillItemMeta(strings.dialog.skillClayMiniature, "Plasticine Clay 3D Miniature", 2.2f, listOf(Color(0xFF059669), Color(0xFF34D399)))
     )
 
     Dialog(onDismissRequest = onDismiss) {
@@ -63,7 +73,7 @@ fun SkillsDrawer(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "选择一个技能，创作独特同款",
+                        text = strings.dialog.skillsTitle,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A)
@@ -77,16 +87,15 @@ fun SkillsDrawer(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(skills) { (skillInfo, colors) ->
-                        val (title, subtitle, depth) = skillInfo
+                    items(skills) { skill ->
                         Box(
                             modifier = Modifier
                                 .width(140.dp)
                                 .height(210.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(Brush.verticalGradient(colors))
+                                .background(Brush.verticalGradient(skill.colors))
                                 .clickable {
-                                    onApplySkill(title, depth)
+                                    onApplySkill(skill.title, skill.depth)
                                     onDismiss()
                                 }
                                 .padding(12.dp)
@@ -103,7 +112,7 @@ fun SkillsDrawer(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = "+${depth}mm 浮雕",
+                                        text = strings.dialog.skillDepth(skill.depth),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
@@ -112,14 +121,14 @@ fun SkillsDrawer(
 
                                 Column {
                                     Text(
-                                        text = title,
+                                        text = skill.title,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = subtitle,
+                                        text = skill.subtitle,
                                         fontSize = 9.sp,
                                         color = Color.White.copy(alpha = 0.85f),
                                         maxLines = 2

@@ -36,6 +36,7 @@ import com.eufymake.real.api.ActivityDto
 import com.eufymake.real.api.CommentDto
 import com.eufymake.real.api.CreatorProfileDto
 import com.eufymake.real.api.NotificationDto
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Announcement
 import com.eufymake.real.model.Project
 import com.eufymake.real.ui.components.*
@@ -64,8 +65,9 @@ fun InspirationsScreen(
     initialSection: String? = null,
     onSectionHandled: (() -> Unit)? = null
 ) {
-    var selectedCategory by remember { mutableStateOf("全部") }
-    var selectedHashtag by remember { mutableStateOf<String?>(null) }
+    val strings = LocalStrings.current
+    var selectedCategoryIndex by remember { mutableStateOf(0) }
+    var selectedHashtagIndex by remember { mutableStateOf(0) }
     var selectedProjectId by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -92,14 +94,31 @@ fun InspirationsScreen(
     // Multi-image gallery index for detail dialog
     var currentGalleryIndex by remember { mutableStateOf(0) }
 
-    val categories = listOf("全部", "3D纹理", "节日快乐", "个性化礼物", "艺术家日常")
-    val hashtags = listOf("全部", "#万圣节", "#3D浮雕", "#亚克力", "#圆柱杯", "#局部光油")
+    val categories = listOf(
+        strings.community.catAll,
+        strings.community.cat3DTexture,
+        strings.community.catHoliday,
+        strings.community.catGifts,
+        strings.community.catArtistDaily
+    )
+    val hashtags = listOf(
+        strings.community.tagAll,
+        strings.community.tagHalloween,
+        strings.community.tag3DRelief,
+        strings.community.tagAcrylic,
+        strings.community.tagMug,
+        strings.community.tagGloss
+    )
 
     val unreadNotificationsCount = notifications.count { !it.isRead }
 
     val filteredProjects = projects.filter { proj ->
-        val matchesCategory = selectedCategory == "全部" || proj.category == selectedCategory
-        val matchesHashtag = selectedHashtag == null || selectedHashtag == "全部" || proj.tags.any { "#$it" == selectedHashtag || it == selectedHashtag }
+        val matchesCategory = selectedCategoryIndex == 0 ||
+                proj.category.contains(categories[selectedCategoryIndex], ignoreCase = true)
+        val matchesHashtag = selectedHashtagIndex == 0 || proj.tags.any { tag ->
+            val curTag = hashtags[selectedHashtagIndex].removePrefix("#")
+            tag.contains(curTag, ignoreCase = true)
+        }
         val matchesSearch = searchQuery.isEmpty() || proj.title.contains(searchQuery, ignoreCase = true) ||
                 proj.description.contains(searchQuery, ignoreCase = true) ||
                 proj.tags.any { it.contains(searchQuery, ignoreCase = true) }
@@ -123,7 +142,7 @@ fun InspirationsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "灵感社区",
+                        text = strings.community.inspirationsTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF1A1A1A)
@@ -142,7 +161,7 @@ fun InspirationsScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("🎓", fontSize = 12.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("学院", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD97706))
+                                Text(strings.dialog.academy, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD97706))
                             }
                         }
 
@@ -215,7 +234,7 @@ fun InspirationsScreen(
                                     ) {
                                         if (searchQuery.isEmpty()) {
                                             Text(
-                                                text = "搜索设计、基材、工艺、创作者...",
+                                                text = strings.community.searchPlaceholder,
                                                 fontSize = 13.sp,
                                                 color = Color(0xFF8E8E93)
                                             )
@@ -330,7 +349,7 @@ fun InspirationsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(categories.size) { idx ->
-                        val isSelected = selectedCategory == categories[idx]
+                        val isSelected = selectedCategoryIndex == idx
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
@@ -340,7 +359,7 @@ fun InspirationsScreen(
                                     if (isSelected) Color(0xFF1A1A1A) else Color(0xFFE5E7EB),
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable { selectedCategory = categories[idx] }
+                                .clickable { selectedCategoryIndex = idx }
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -361,12 +380,12 @@ fun InspirationsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(hashtags.size) { idx ->
-                        val isSelected = selectedHashtag == hashtags[idx] || (selectedHashtag == null && hashtags[idx] == "全部")
+                        val isSelected = selectedHashtagIndex == idx
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(if (isSelected) Color(0xFFDCFCE7) else Color(0xFFF1F5F9))
-                                .clickable { selectedHashtag = if (hashtags[idx] == "全部") null else hashtags[idx] }
+                                .clickable { selectedHashtagIndex = idx }
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
@@ -479,7 +498,7 @@ fun InspirationsScreen(
                                     .padding(horizontal = 12.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    if (isFollowing) "已关注" else "关注",
+                                    if (isFollowing) strings.community.following else strings.community.follow,
                                     fontSize = 12.sp,
                                     color = if (isFollowing) Color(0xFF64748B) else BrandGreen,
                                     fontWeight = FontWeight.SemiBold
@@ -606,12 +625,12 @@ fun InspirationsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.Print, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
-                                    Text("${detail.forkCount}次同款", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.community.forkCount(detail.forkCount), fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(3.dp))
-                                    Text("${projectComments.size}条评论", fontSize = 11.sp, color = Color(0xFF64748B))
+                                    Text(strings.community.commentCount(projectComments.size), fontSize = 11.sp, color = Color(0xFF64748B))
                                 }
                             }
                         }
@@ -625,7 +644,8 @@ fun InspirationsScreen(
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(Color(0xFFF1F5F9))
                                             .clickable {
-                                                selectedHashtag = "#$tag"
+                                                val matchIdx = hashtags.indexOfFirst { it.contains(tag, ignoreCase = true) }
+                                                selectedHashtagIndex = if (matchIdx >= 0) matchIdx else 0
                                                 selectedProjectId = null
                                             }
                                             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -652,8 +672,8 @@ fun InspirationsScreen(
                                     Icon(Icons.Default.Print, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Column {
-                                        Text("适配基材: ${detail.substrateName}", fontSize = 11.sp, color = Color(0xFF64748B))
-                                        Text("推荐设备: eufyMake UV Printer E1", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
+                                        Text(strings.community.compatibleSubstrate(detail.substrateName), fontSize = 11.sp, color = Color(0xFF64748B))
+                                        Text(strings.community.recommendedDevice, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
                                     }
                                 }
                             }
@@ -750,11 +770,11 @@ fun InspirationsScreen(
                                                 scaleY = detailStarScale.value
                                             }
                                     )
-                                    Text(if (detail.isBookmarked) "已收藏" else "收藏", fontSize = 10.sp, color = Color(0xFF8E8E93))
+                                    Text(if (detail.isBookmarked) strings.community.bookmarked else strings.community.bookmark, fontSize = 10.sp, color = Color(0xFF8E8E93))
                                 }
                             }
 
-                            // Green CTA Button: "定制同款" (Make Same)
+                            // Green CTA Button: Make Same
                             Button(
                                 onClick = {
                                     selectedProjectId = null
@@ -767,7 +787,7 @@ fun InspirationsScreen(
                                     .height(44.dp)
                             ) {
                                 Text(
-                                    text = "做同款",
+                                    text = strings.canvas.makeSimilar,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White

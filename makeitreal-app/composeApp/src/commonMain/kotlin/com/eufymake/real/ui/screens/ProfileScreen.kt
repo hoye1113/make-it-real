@@ -23,6 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.AppLanguage
+import com.eufymake.real.i18n.LanguageManager
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Draft
 import com.eufymake.real.model.PointsState
 import com.eufymake.real.ui.theme.BrandGreen
@@ -39,12 +42,14 @@ fun ProfileScreen(
     onOpenAcademy: () -> Unit = {},
     onOpenActivities: () -> Unit = {}
 ) {
+    val strings = LocalStrings.current
     var selectedTab by remember { mutableStateOf(0) }
     var selectedDraftForOptions by remember { mutableStateOf<Draft?>(null) }
     var draftToRename by remember { mutableStateOf<Draft?>(null) }
     var renameInputText by remember { mutableStateOf("") }
     var draftToDelete by remember { mutableStateOf<Draft?>(null) }
-    val tabs = listOf("创建", "已发布", "点赞", "收藏")
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val tabs = listOf(strings.canvas.newCanvas, strings.profile.myCreations, strings.community.tabFeatured, strings.profile.drafts)
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF7F8FA))) {
         LazyColumn(
@@ -57,19 +62,56 @@ fun ProfileScreen(
             // 1. User Header & Stats (Frame 0110)
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    // Header Bar with User Info & Language Selector
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Box(
+                                modifier = Modifier.size(44.dp).clip(CircleShape).background(Color(0xFFE2E8F0)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(26.dp))
+                            }
+                            Column {
+                                Text(strings.profile.userNick, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                                Text(strings.profile.userRole, fontSize = 12.sp, color = Color(0xFF64748B))
+                            }
+                        }
+
+                        // Language Switch Button
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White,
+                            shadowElevation = 1.dp,
+                            modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { showLanguageDialog = true }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(Icons.Default.Language, contentDescription = strings.profile.language, tint = BrandGreen, modifier = Modifier.size(16.dp))
+                                Text(strings.profile.currentLangName, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(24.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StatItem(label = "粉丝", count = 0)
-                        StatItem(label = "已关注", count = 0)
-                        StatItem(label = "喜欢", count = 0)
+                        StatItem(label = strings.community.follow, count = 0)
+                        StatItem(label = strings.community.following, count = 0)
+                        StatItem(label = strings.profile.favorites, count = 0)
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // AI Credits Banner: "AI积分 195" (Frame 0110)
+                    // AI Credits Banner
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -103,7 +145,7 @@ fun ProfileScreen(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "AI积分",
+                                    text = strings.profile.cloudSync,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF1A1A1A)
@@ -121,7 +163,7 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Quick Navigation: 学院 vs 活动 (Frame 0110)
+                    // Quick Navigation: 学院 vs 活动
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -147,7 +189,7 @@ fun ProfileScreen(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("学院", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A1A))
+                                Text(strings.dialog.academy, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A1A))
                             }
                         }
 
@@ -167,7 +209,7 @@ fun ProfileScreen(
                             ) {
                                 Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("活动", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A1A))
+                                Text(strings.community.tabContest, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A1A))
                             }
                         }
                     }
@@ -217,7 +259,7 @@ fun ProfileScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "暂无草稿，快去“创作”开启您的专属设计吧",
+                            text = strings.profile.emptyDraftsHint,
                             fontSize = 13.sp,
                             color = Color(0xFF8E8E93)
                         )
@@ -289,7 +331,7 @@ fun ProfileScreen(
                                                 )
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 Text(
-                                                    text = "刚刚编辑",
+                                                    text = strings.profile.justEdited,
                                                     fontSize = 11.sp,
                                                     color = Color(0xFF8E8E93)
                                                 )
@@ -362,7 +404,7 @@ fun ProfileScreen(
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("重命名草稿", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                Text(strings.common.edit, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
                             }
 
                             // Option 2: Duplicate
@@ -379,7 +421,7 @@ fun ProfileScreen(
                             ) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color(0xFF1A1A1A), modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("创建副本", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                Text(strings.common.copy, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
                             }
 
                             // Option 3: Delete
@@ -396,7 +438,7 @@ fun ProfileScreen(
                             ) {
                                 Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Text("删除草稿", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFFDC2626))
+                                Text(strings.common.delete, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFFDC2626))
                             }
 
                             Spacer(modifier = Modifier.height(6.dp))
@@ -408,7 +450,7 @@ fun ProfileScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.fillMaxWidth().height(42.dp)
                             ) {
-                                Text("取消", color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
+                                Text(strings.common.cancel, color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -422,7 +464,7 @@ fun ProfileScreen(
                 onDismissRequest = { draftToRename = null },
                 title = {
                     Text(
-                        text = "重命名草稿",
+                        text = strings.common.edit,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A)
@@ -431,7 +473,7 @@ fun ProfileScreen(
                 text = {
                     Column {
                         Text(
-                            text = "请输入新的草稿名称：",
+                            text = strings.canvas.blankCanvas,
                             fontSize = 13.sp,
                             color = Color(0xFF64748B)
                         )
@@ -458,7 +500,7 @@ fun ProfileScreen(
                                 cursorBrush = androidx.compose.ui.graphics.SolidColor(BrandGreen),
                                 decorationBox = { innerTextField ->
                                     if (renameInputText.isEmpty()) {
-                                        Text("请输入名称", color = Color(0xFF94A3B8), fontSize = 14.sp)
+                                        Text(strings.common.edit, color = Color(0xFF94A3B8), fontSize = 14.sp)
                                     }
                                     innerTextField()
                                 },
@@ -478,7 +520,7 @@ fun ProfileScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = BrandGreen),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("保存", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(strings.common.save, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 },
                 dismissButton = {
@@ -486,7 +528,7 @@ fun ProfileScreen(
                         onClick = { draftToRename = null },
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("取消", color = Color(0xFF1A1A1A))
+                        Text(strings.common.cancel, color = Color(0xFF1A1A1A))
                     }
                 },
                 shape = RoundedCornerShape(20.dp),
@@ -500,7 +542,7 @@ fun ProfileScreen(
                 onDismissRequest = { draftToDelete = null },
                 title = {
                     Text(
-                        text = "删除草稿",
+                        text = strings.common.delete,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A1A1A)
@@ -508,7 +550,7 @@ fun ProfileScreen(
                 },
                 text = {
                     Text(
-                        text = "确定要删除草稿“${targetDraft.title}”吗？此操作无法撤销。",
+                        text = strings.canvas.deleteDraftConfirm,
                         fontSize = 14.sp,
                         color = Color(0xFF475569)
                     )
@@ -522,7 +564,7 @@ fun ProfileScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("确认删除", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(strings.common.delete, fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 },
                 dismissButton = {
@@ -530,7 +572,92 @@ fun ProfileScreen(
                         onClick = { draftToDelete = null },
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("取消", color = Color(0xFF1A1A1A))
+                        Text(strings.common.cancel, color = Color(0xFF1A1A1A))
+                    }
+                },
+                shape = RoundedCornerShape(20.dp),
+                containerColor = Color.White
+            )
+        }
+
+        // Language Selection Dialog
+        if (showLanguageDialog) {
+            AlertDialog(
+                onDismissRequest = { showLanguageDialog = false },
+                title = {
+                    Text(
+                        text = strings.profile.selectLanguage,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A1A)
+                    )
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        // Chinese Option
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (LanguageManager.currentLanguage == AppLanguage.ZH) Color(0xFFE8F5E9) else Color(0xFFF8FAFC),
+                            border = if (LanguageManager.currentLanguage == AppLanguage.ZH) androidx.compose.foundation.BorderStroke(1.5.dp, BrandGreen) else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    LanguageManager.setLanguage(AppLanguage.ZH)
+                                    showLanguageDialog = false
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = strings.profile.langZh,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (LanguageManager.currentLanguage == AppLanguage.ZH) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (LanguageManager.currentLanguage == AppLanguage.ZH) BrandGreen else Color(0xFF1A1A1A)
+                                )
+                                if (LanguageManager.currentLanguage == AppLanguage.ZH) {
+                                    Icon(Icons.Default.Check, contentDescription = null, tint = BrandGreen, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
+
+                        // English Option
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (LanguageManager.currentLanguage == AppLanguage.EN) Color(0xFFE8F5E9) else Color(0xFFF8FAFC),
+                            border = if (LanguageManager.currentLanguage == AppLanguage.EN) androidx.compose.foundation.BorderStroke(1.5.dp, BrandGreen) else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    LanguageManager.setLanguage(AppLanguage.EN)
+                                    showLanguageDialog = false
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = strings.profile.langEn,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (LanguageManager.currentLanguage == AppLanguage.EN) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (LanguageManager.currentLanguage == AppLanguage.EN) BrandGreen else Color(0xFF1A1A1A)
+                                )
+                                if (LanguageManager.currentLanguage == AppLanguage.EN) {
+                                    Icon(Icons.Default.Check, contentDescription = null, tint = BrandGreen, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showLanguageDialog = false }) {
+                        Text(strings.common.done, color = BrandGreen, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 },
                 shape = RoundedCornerShape(20.dp),
