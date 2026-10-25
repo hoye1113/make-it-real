@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,13 +17,66 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.Role
+import com.eufymake.real.model.MaterialType
 import com.eufymake.real.model.Substrate
 import com.eufymake.real.model.SubstrateShape
 
 /**
+ * Modern tactile click feedback with spring bounce and subtle opacity.
+ * Rooted in InteractionSource to naturally handle scroll cancellation, boundary exits,
+ * and Desktop cursor hover affordances without ugly gray box ripples.
+ */
+fun Modifier.tactileClick(
+    scaleDown: Float = 0.96f,
+    alphaDown: Float = 0.88f,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+): Modifier = composed {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && enabled) scaleDown else 1f,
+        animationSpec = spring(
+            dampingRatio = 0.72f,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "tactileClickScale"
+    )
+    val alpha by animateFloatAsState(
+        targetValue = when {
+            isPressed && enabled -> alphaDown
+            isHovered && enabled -> 0.92f
+            else -> 1f
+        },
+        animationSpec = tween(durationMillis = 120),
+        label = "tactileClickAlpha"
+    )
+
+    this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+            this.alpha = alpha
+        }
+        .pointerHoverIcon(PointerIcon.Hand)
+        .clickable(
+            interactionSource = interactionSource,
+            indication = null,
+            enabled = enabled,
+            role = Role.Button,
+            onClick = onClick
+        )
+}
+
+/**
  * Tactile spring press effect for interactive components.
- * Detects touch down without consuming pointer events, shrinking slightly with natural bounce.
+ * Detects touch down consuming unconsumed pointers, shrinking slightly with natural bounce.
  */
 fun Modifier.tactilePress(scaleDown: Float = 0.95f): Modifier = composed {
     var isPressed by remember { mutableStateOf(false) }
@@ -41,7 +95,7 @@ fun Modifier.tactilePress(scaleDown: Float = 0.95f): Modifier = composed {
         }
         .pointerInput(Unit) {
             awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false)
+                awaitFirstDown(requireUnconsumed = true)
                 isPressed = true
                 waitForUpOrCancellation()
                 isPressed = false
@@ -73,32 +127,12 @@ fun Modifier.tactilePress(
 
 /**
  * Bouncy clickable with spring release and no default gray box ripple.
+ * Delegates to the unified tactileClick standard.
  */
 fun Modifier.bounceClick(
-    scaleDown: Float = 0.95f,
+    scaleDown: Float = 0.96f,
     onClick: () -> Unit
-): Modifier = composed {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) scaleDown else 1f,
-        animationSpec = spring(
-            dampingRatio = 0.72f,
-            stiffness = Spring.StiffnessHigh
-        ),
-        label = "bounceClickScale"
-    )
-    this
-        .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        }
-        .clickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick
-        )
-}
+): Modifier = tactileClick(scaleDown = scaleDown, onClick = onClick)
 
 /**
  * Shimmer skeleton loading brush effect for image placeholders and loading states.
@@ -136,10 +170,10 @@ object SubstrateMaterials {
     fun getBrush(substrate: Substrate): Brush {
         val id = substrate.id.lowercase()
         val name = substrate.name.lowercase()
-        val material = substrate.defaultMaterial.lowercase()
+        val matType = MaterialType.fromString(substrate.defaultMaterial)
 
         return when {
-            id.contains("wood") || name.contains("wood") || material.contains("木") -> {
+            matType == MaterialType.WOOD || id.contains("wood") || name.contains("wood") -> {
                 Brush.verticalGradient(
                     listOf(
                         Color(0xFFEFE3D0),
@@ -148,7 +182,7 @@ object SubstrateMaterials {
                     )
                 )
             }
-            id.contains("acrylic") || name.contains("acrylic") || id.contains("magnet") || material.contains("亚克力") -> {
+            matType == MaterialType.ACRYLIC || id.contains("acrylic") || name.contains("acrylic") || id.contains("magnet") -> {
                 Brush.linearGradient(
                     listOf(
                         Color(0xFFF8FCFF),
@@ -157,7 +191,7 @@ object SubstrateMaterials {
                     )
                 )
             }
-            id.contains("metal") || name.contains("metal") || id.contains("phone") || material.contains("金属") -> {
+            matType == MaterialType.METAL || id.contains("metal") || name.contains("metal") || id.contains("phone") -> {
                 Brush.linearGradient(
                     listOf(
                         Color(0xFFEAECEF),
@@ -167,7 +201,7 @@ object SubstrateMaterials {
                     )
                 )
             }
-            id.contains("leather") || name.contains("leather") || material.contains("皮") -> {
+            matType == MaterialType.LEATHER || id.contains("leather") || name.contains("leather") -> {
                 Brush.verticalGradient(
                     listOf(
                         Color(0xFF7A583A),
@@ -175,7 +209,7 @@ object SubstrateMaterials {
                     )
                 )
             }
-            id.contains("canvas") || name.contains("canvas") || material.contains("画布") -> {
+            matType == MaterialType.CERAMIC || matType == MaterialType.GLASS || id.contains("canvas") || name.contains("canvas") || substrate.defaultMaterial.contains("画布") -> {
                 Brush.verticalGradient(
                     listOf(
                         Color(0xFFF9F6F0),
@@ -196,12 +230,12 @@ object SubstrateMaterials {
 
     fun getSlabDepthColor(substrate: Substrate): Color {
         val id = substrate.id.lowercase()
-        val material = substrate.defaultMaterial.lowercase()
+        val matType = MaterialType.fromString(substrate.defaultMaterial)
         return when {
-            id.contains("wood") || material.contains("木") -> Color(0xFFB89B77)
-            id.contains("acrylic") || id.contains("magnet") || material.contains("亚克力") -> Color(0xFFBFDDF2)
-            id.contains("metal") || material.contains("金属") -> Color(0xFF98A2B3)
-            id.contains("leather") || material.contains("皮") -> Color(0xFF432C19)
+            matType == MaterialType.WOOD || id.contains("wood") -> Color(0xFFB89B77)
+            matType == MaterialType.ACRYLIC || id.contains("acrylic") || id.contains("magnet") -> Color(0xFFBFDDF2)
+            matType == MaterialType.METAL || id.contains("metal") -> Color(0xFF98A2B3)
+            matType == MaterialType.LEATHER || id.contains("leather") -> Color(0xFF432C19)
             else -> Color(0xFFCBD5E1)
         }
     }

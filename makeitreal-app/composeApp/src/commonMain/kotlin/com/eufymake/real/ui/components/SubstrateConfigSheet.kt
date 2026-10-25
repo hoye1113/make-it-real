@@ -25,9 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.eufymake.real.i18n.LocalStrings
+import com.eufymake.real.model.MaterialType
 import com.eufymake.real.model.Substrate
 import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
+import com.eufymake.real.ui.util.tactileClick
 
 @Composable
 fun SubstrateConfigSheet(
@@ -36,21 +38,26 @@ fun SubstrateConfigSheet(
     onConfirmCreate: (Substrate) -> Unit
 ) {
     val strings = LocalStrings.current
-    var width by remember { mutableStateOf(substrate.widthMm.toInt().toString()) }
-    var height by remember { mutableStateOf(substrate.heightMm.toInt().toString()) }
-    var thickness by remember { mutableStateOf(substrate.thicknessMm.toInt().toString()) }
-    var selectedMaterial by remember { mutableStateOf(substrate.defaultMaterial) }
+    fun Float.toPrecisionString(): String = if (this % 1f == 0f) toInt().toString() else toString()
+    var width by remember { mutableStateOf(substrate.widthMm.toPrecisionString()) }
+    var height by remember { mutableStateOf(substrate.heightMm.toPrecisionString()) }
+    var thickness by remember { mutableStateOf(substrate.thicknessMm.toPrecisionString()) }
+    var selectedMaterialType by remember {
+        mutableStateOf(MaterialType.fromString(substrate.defaultMaterial))
+    }
+    var isMaterialDropdownExpanded by remember { mutableStateOf(false) }
     var selectedPreset by remember { mutableStateOf(substrate.presets.firstOrNull() ?: "") }
     var selectedColorIndex by remember { mutableStateOf(0) }
 
-    val materialOptions = listOf(
-        strings.substrate.matAcrylic,
-        strings.substrate.matWood,
-        strings.substrate.matMetal,
-        strings.substrate.matPvc,
-        strings.substrate.matCeramic,
-        strings.substrate.matGlass
-    )
+    fun MaterialType.label(): String = when (this) {
+        MaterialType.ACRYLIC -> strings.substrate.matAcrylic
+        MaterialType.WOOD -> strings.substrate.matWood
+        MaterialType.LEATHER -> strings.substrate.matLeather
+        MaterialType.METAL -> strings.substrate.matMetal
+        MaterialType.PVC -> strings.substrate.matPvc
+        MaterialType.CERAMIC -> strings.substrate.matCeramic
+        MaterialType.GLASS -> strings.substrate.matGlass
+    }
     val colorSwatches = listOf(
         Color(0xFFF1F5F9), // Translucent white / clear
         Color(0xFFFFFFFF), // Solid white
@@ -187,36 +194,56 @@ fun SubstrateConfigSheet(
                                     color = Color(0xFF8E8E93)
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(44.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(Color(0xFFF7F8FA))
-                                        .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
-                                        .clickable {
-                                            val nextIdx = (materialOptions.indexOf(selectedMaterial) + 1) % materialOptions.size
-                                            selectedMaterial = materialOptions[nextIdx]
-                                        }
-                                        .padding(horizontal = 12.dp),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                Box {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(44.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFFF7F8FA))
+                                            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(12.dp))
+                                            .tactileClick { isMaterialDropdownExpanded = true }
+                                            .padding(horizontal = 12.dp),
+                                        contentAlignment = Alignment.CenterStart
                                     ) {
-                                        Text(
-                                            selectedMaterial,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1A1A1A)
-                                        )
-                                        Icon(
-                                            Icons.Default.KeyboardArrowDown,
-                                            contentDescription = null,
-                                            tint = Color(0xFF8E8E93)
-                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                selectedMaterialType.label(),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color(0xFF1A1A1A)
+                                            )
+                                            Icon(
+                                                Icons.Default.KeyboardArrowDown,
+                                                contentDescription = null,
+                                                tint = Color(0xFF8E8E93)
+                                            )
+                                        }
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = isMaterialDropdownExpanded,
+                                        onDismissRequest = { isMaterialDropdownExpanded = false }
+                                    ) {
+                                        MaterialType.entries.forEach { material ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = material.label(),
+                                                        fontWeight = if (material == selectedMaterialType) FontWeight.Bold else FontWeight.Normal,
+                                                        color = if (material == selectedMaterialType) BrandGreen else Color(0xFF1A1A1A)
+                                                    )
+                                                },
+                                                onClick = {
+                                                    selectedMaterialType = material
+                                                    isMaterialDropdownExpanded = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -283,21 +310,21 @@ fun SubstrateConfigSheet(
                                         color = if (isSelected) BrandGreen else Color(0xFFE5E7EB),
                                         shape = RoundedCornerShape(12.dp)
                                     )
-                                    .clickable {
+                                    .tactileClick {
                                         selectedPreset = preset
                                         when (preset) {
-                                            "Acrylic Sheet" -> { width = "300"; height = "400"; thickness = "2"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "Wood Sheet" -> { width = "300"; height = "400"; thickness = "3"; selectedMaterial = strings.substrate.matWood }
-                                            "Metal Sheet" -> { width = "200"; height = "300"; thickness = "1"; selectedMaterial = strings.substrate.matMetal }
-                                            "iPhone 16" -> { width = "72"; height = "148"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "iPhone 16 Plus" -> { width = "78"; height = "161"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "iPhone 16 Pro" -> { width = "72"; height = "150"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "iPhone 16 Pro Max" -> { width = "78"; height = "163"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "iPhone 17" -> { width = "72"; height = "149"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "iPhone 17 Pro" -> { width = "72"; height = "151"; thickness = "8"; selectedMaterial = strings.substrate.matAcrylic }
-                                            "AirPods 4 Charging Case" -> { width = "50"; height = "46"; thickness = "21"; selectedMaterial = strings.substrate.matPvc }
-                                            "AirPods Pro 3 Charging Case" -> { width = "60"; height = "45"; thickness = "22"; selectedMaterial = strings.substrate.matPvc }
-                                            "Switch Joy-Con Controller" -> { width = "36"; height = "102"; thickness = "28"; selectedMaterial = strings.substrate.matPvc }
+                                            "Acrylic Sheet" -> { width = "300"; height = "400"; thickness = "2"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "Wood Sheet" -> { width = "300"; height = "400"; thickness = "3"; selectedMaterialType = MaterialType.WOOD }
+                                            "Metal Sheet" -> { width = "200"; height = "300"; thickness = "1"; selectedMaterialType = MaterialType.METAL }
+                                            "iPhone 16" -> { width = "72"; height = "148"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "iPhone 16 Plus" -> { width = "78"; height = "161"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "iPhone 16 Pro" -> { width = "72"; height = "150"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "iPhone 16 Pro Max" -> { width = "78"; height = "163"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "iPhone 17" -> { width = "72"; height = "149"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "iPhone 17 Pro" -> { width = "72"; height = "151"; thickness = "8"; selectedMaterialType = MaterialType.ACRYLIC }
+                                            "AirPods 4 Charging Case" -> { width = "50"; height = "46"; thickness = "21"; selectedMaterialType = MaterialType.PVC }
+                                            "AirPods Pro 3 Charging Case" -> { width = "60"; height = "45"; thickness = "22"; selectedMaterialType = MaterialType.PVC }
+                                            "Switch Joy-Con Controller" -> { width = "36"; height = "102"; thickness = "28"; selectedMaterialType = MaterialType.PVC }
                                         }
                                     }
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -332,14 +359,14 @@ fun SubstrateConfigSheet(
                 // Bottom Action Button: "创作"
                 Button(
                     onClick = {
-                        val parsedW = width.toFloatOrNull() ?: substrate.widthMm
-                        val parsedH = height.toFloatOrNull() ?: substrate.heightMm
-                        val parsedThick = thickness.toFloatOrNull() ?: substrate.thicknessMm
+                        val parsedW = (width.toFloatOrNull() ?: substrate.widthMm).coerceAtLeast(1f)
+                        val parsedH = (height.toFloatOrNull() ?: substrate.heightMm).coerceAtLeast(1f)
+                        val parsedThick = (thickness.toFloatOrNull() ?: substrate.thicknessMm).coerceAtLeast(0.1f)
                         val configuredSubstrate = substrate.copy(
                             widthMm = parsedW,
                             heightMm = parsedH,
                             thicknessMm = parsedThick,
-                            defaultMaterial = selectedMaterial
+                            defaultMaterial = selectedMaterialType.label()
                         )
                         onConfirmCreate(configuredSubstrate)
                     },

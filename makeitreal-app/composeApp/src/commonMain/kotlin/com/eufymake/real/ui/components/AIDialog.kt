@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.repository.AIGenerationState
 import com.eufymake.real.repository.MockAIRepository
@@ -32,6 +33,7 @@ fun AIDialog(
     onAddGeneratedLayer: (CanvasLayer) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalStrings.current
     val coroutineScope = rememberCoroutineScope()
     val aiRepo = remember { MockAIRepository() }
 
@@ -79,12 +81,12 @@ fun AIDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Synthesizes 16-bit displacement & UV passes",
+                        text = strings.canvas.aiSubtitle,
                         fontSize = 11.sp,
                         color = Color(0xFF64748B)
                     )
                     Text(
-                        text = "Credits: $availableCredits",
+                        text = strings.canvas.aiCreditsBadge(availableCredits),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (availableCredits >= 2) BrandAccent else Color(0xFFEF4444)
@@ -98,7 +100,7 @@ fun AIDialog(
                     onValueChange = { aiPromptText = it; errorMessage = null },
                     enabled = !isAIGenerating,
                     modifier = Modifier.fillMaxWidth().height(90.dp),
-                    placeholder = { Text("e.g. Steampunk compass with embossed brass gears...") }
+                    placeholder = { Text(strings.canvas.aiPlaceholder) }
                 )
 
                 if (errorMessage != null) {
@@ -128,7 +130,7 @@ fun AIDialog(
                     Button(
                         onClick = {
                             if (availableCredits < 2) {
-                                errorMessage = "Insufficient AI Credits (Needs 2 credits, you have $availableCredits)"
+                                errorMessage = strings.canvas.aiInsufficientCredits(2, availableCredits)
                                 return@Button
                             }
                             isAIGenerating = true
@@ -161,7 +163,11 @@ fun AIDialog(
                     ) {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Generate 3D Relief (2 Credits)")
+                        Text(
+                            text = strings.canvas.aiButtonGenerate,
+                            maxLines = 1,
+                            softWrap = false
+                        )
                     }
                 }
             }

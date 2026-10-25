@@ -42,6 +42,7 @@ import com.eufymake.real.model.Project
 import com.eufymake.real.ui.components.*
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactileClick
 
 @Composable
 fun InspirationsScreen(
@@ -268,7 +269,7 @@ fun InspirationsScreen(
                                             listOf(Color(ann.gradientStart), Color(ann.gradientEnd))
                                         )
                                     )
-                                    .clickable {
+                                    .tactileClick {
                                         if (ann.id.contains("halloween") || ann.id.contains("contest") || ann.id.contains("cup") || ann.id.contains("rotary")) {
                                             val targetAct = when {
                                                 ann.id.contains("halloween") -> activities.firstOrNull { it.id.contains("halloween") }
@@ -291,27 +292,31 @@ fun InspirationsScreen(
                                     )
                                 }
 
-                                // Dark gradient protection
+                                // Dark gradient protection on lower half
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .background(
                                             Brush.verticalGradient(
-                                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f)),
+                                                startY = 80f
                                             )
                                         )
-                                    )
+                                )
 
-                                // Text contents
+                                // Text contents in protected semi-transparent panel
                                 Column(
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
-                                        .padding(12.dp)
+                                        .padding(8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.Black.copy(alpha = 0.45f))
+                                        .padding(horizontal = 8.dp, vertical = 6.dp)
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(6.dp))
-                                            .background(Color.White.copy(alpha = 0.85f))
+                                            .background(Color.White.copy(alpha = 0.90f))
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
@@ -327,13 +332,15 @@ fun InspirationsScreen(
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = ann.subtitle,
                                         fontSize = 10.sp,
-                                        color = Color.White.copy(alpha = 0.85f),
-                                        maxLines = 1
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -448,41 +455,49 @@ fun InspirationsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { viewingCreatorId = detail.creatorId }
-                        ) {
-                            IconButton(onClick = { selectedProjectId = null }, modifier = Modifier.size(32.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { selectedProjectId = null },
+                                modifier = Modifier.size(36.dp)
+                            ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF1A1A1A))
                             }
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFCBD5E1)),
-                                contentAlignment = Alignment.Center
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .tactileClick { viewingCreatorId = detail.creatorId }
+                                    .padding(horizontal = 6.dp, vertical = 4.dp)
                             ) {
-                                Text(
-                                    detail.authorName.take(1),
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E293B)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFCBD5E1)),
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        detail.authorName,
+                                        detail.authorName.take(1),
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1A1A1A)
+                                        color = Color(0xFF1E293B)
                                     )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = BrandGreen, modifier = Modifier.size(14.dp))
                                 }
-                                Text(detail.authorHandle, fontSize = 10.sp, color = Color(0xFF64748B))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            detail.authorName,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1A1A1A)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = BrandGreen, modifier = Modifier.size(14.dp))
+                                    }
+                                    Text(detail.authorHandle, fontSize = 10.sp, color = Color(0xFF64748B))
+                                }
                             }
                         }
 
@@ -494,7 +509,7 @@ fun InspirationsScreen(
                                     .clip(RoundedCornerShape(12.dp))
                                     .border(1.dp, if (isFollowing) Color(0xFFCBD5E1) else BrandGreen, RoundedCornerShape(12.dp))
                                     .background(if (isFollowing) Color(0xFFF1F5F9) else Color.White)
-                                    .clickable { onToggleFollow(detail.creatorId) }
+                                    .tactileClick { onToggleFollow(detail.creatorId) }
                                     .padding(horizontal = 12.dp, vertical = 4.dp)
                             ) {
                                 Text(
@@ -507,10 +522,7 @@ fun InspirationsScreen(
                         }
                     }
 
-                    // 2. Interactive Multi-Image Gallery with Swipe Navigation
-                    val activeImageName = gallery.getOrElse(currentGalleryIndex) { detail.imageName }
-                    val activeBmp = if (activeImageName.isNotEmpty()) rememberAppImage(activeImageName) else null
-
+                    // 2. Interactive Multi-Image Gallery with Animated Slide Navigation
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -519,13 +531,27 @@ fun InspirationsScreen(
                                 Brush.linearGradient(listOf(Color(detail.coverGradientStart), Color(detail.coverGradientEnd)))
                             )
                     ) {
-                        if (activeBmp != null) {
-                            Image(
-                                bitmap = activeBmp,
-                                contentDescription = detail.title,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                        AnimatedContent(
+                            targetState = currentGalleryIndex,
+                            transitionSpec = {
+                                if (targetState > initialState) {
+                                    slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut()
+                                } else {
+                                    slideInHorizontally { -it } + fadeIn() togetherWith slideOutHorizontally { it } + fadeOut()
+                                }
+                            },
+                            label = "galleryTransition"
+                        ) { targetIndex ->
+                            val imgName = gallery.getOrElse(targetIndex) { detail.imageName }
+                            val bmp = if (imgName.isNotEmpty()) rememberAppImage(imgName) else null
+                            if (bmp != null) {
+                                Image(
+                                    bitmap = bmp,
+                                    contentDescription = detail.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                         }
 
                         // Left Arrow (if > 1 image and index > 0)

@@ -15,6 +15,7 @@ interface AppStrings {
     val community: CommunityStrings
     val substrate: SubstrateStrings
     val dialog: DialogStrings
+    val points: PointsStrings
 }
 
 interface NavStrings {
@@ -142,6 +143,10 @@ interface CanvasStrings {
     val recentWorks: String
     val blankCanvas: String
     val cameraAligned: String
+    val alignModeFlatbedCamera: String
+    val alignModeFlatbedMini: String
+    val alignModeRotaryJig: String
+    val alignModeRollUvDtf: String
     val canvasReady: String
     val quickAddTip: String
     val uploadPhoto: String
@@ -168,6 +173,14 @@ interface CanvasStrings {
     val selectSubstrateDesc: String
     val makeSimilar: String
     val noDevice: String
+    val selectShapeTitle: String
+    val shapeCircle: String
+    val shapeRectangle: String
+    val aiSubtitle: String
+    val aiPlaceholder: String
+    val aiButtonGenerate: String
+    fun aiCreditsBadge(credits: Int): String
+    fun aiInsufficientCredits(required: Int, available: Int): String
     fun deviceReady(name: String): String
     fun draftFromCourse(title: String): String
     fun draftFromProject(title: String): String
@@ -373,6 +386,7 @@ interface SubstrateStrings {
     val materialDescMetal: String
     val matAcrylic: String
     val matWood: String
+    val matLeather: String
     val matMetal: String
     val matPvc: String
     val matCeramic: String
@@ -432,4 +446,28 @@ interface DialogStrings {
     fun officialContest(prize: String): String
     fun daysRemaining(days: Long): String
     fun submissionCount(count: Int): String
+}
+
+interface PointsStrings {
+    val pointsHubTitle: String
+    val availableBalance: String
+    val pts: String
+    val aiReliefCredits: String
+    val tabDailyTasks: String
+    val tabRewardsMall: String
+    val dailyCheckIn: String
+    val checkInReward: String
+    val claimed: String
+    val checkIn: String
+    val taskCenter: String
+    val completed: String
+    val goTask: String
+    val redeemAssets: String
+    val redeemed: String
+    val redeem: String
+    val soldOut: String
+    val lowPoints: String
+    val resetMockData: String
+    fun pointsCost(pts: Int): String
+    fun taskReward(pts: Int): String
 }

@@ -16,6 +16,10 @@ class MockPointsRepository : PointsRepository {
     private val _pointsState = MutableStateFlow(PointsState())
     override val pointsState: StateFlow<PointsState> = _pointsState.asStateFlow()
 
+    fun resetPoints() {
+        _pointsState.value = PointsState()
+    }
+
     override fun checkIn(): Boolean {
         if (_pointsState.value.isCheckedInToday) return false
         _pointsState.value = _pointsState.value.copy(

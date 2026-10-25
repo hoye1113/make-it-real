@@ -78,9 +78,12 @@ fun DevicesScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = if (isOnline) strings.device.wifiConnected else strings.device.statusOffline,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isOnline) Color(0xFF15803D) else Color(0xFF64748B)
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isOnline) Color(0xFF15803D) else Color(0xFF64748B)
+                                )
                             )
                         }
                     }

@@ -144,6 +144,29 @@ class MakeItRealTest {
         assertTrue(redeemSuccess)
         assertEquals(pointsBeforeRedeem - item.pointsCost, repo.pointsState.value.totalPoints)
         assertEquals(creditsBeforeRedeem + 50, repo.pointsState.value.aiCredits)
+
+        // Reset points test
+        repo.resetPoints()
+        assertEquals(initialPoints, repo.pointsState.value.totalPoints)
+        assertEquals(initialCredits, repo.pointsState.value.aiCredits)
+        assertFalse(repo.pointsState.value.isCheckedInToday)
+    }
+
+    @Test
+    fun testMaterialTypeAndAlignmentModes() {
+        assertEquals(MaterialType.ACRYLIC, MaterialType.fromString("亚克力"))
+        assertEquals(MaterialType.LEATHER, MaterialType.fromString("皮革"))
+        assertEquals(MaterialType.WOOD, MaterialType.fromString("木材"))
+        assertEquals(MaterialType.METAL, MaterialType.fromString("金属"))
+        assertEquals(MaterialType.PVC, MaterialType.fromString("PVC"))
+        assertEquals(MaterialType.CERAMIC, MaterialType.fromString("陶瓷"))
+        assertEquals(MaterialType.GLASS, MaterialType.fromString("玻璃"))
+
+        assertEquals(4, AlignmentMode.entries.size)
+        assertTrue(AlignmentMode.entries.contains(AlignmentMode.FLATBED_CAMERA))
+        assertTrue(AlignmentMode.entries.contains(AlignmentMode.FLATBED_MINI))
+        assertTrue(AlignmentMode.entries.contains(AlignmentMode.ROTARY_JIG))
+        assertTrue(AlignmentMode.entries.contains(AlignmentMode.ROLL_UV_DTF))
     }
 
     @Test

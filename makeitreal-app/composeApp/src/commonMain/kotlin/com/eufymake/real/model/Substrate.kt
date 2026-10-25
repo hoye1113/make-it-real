@@ -10,6 +10,36 @@ enum class SubstrateShape {
     PHONE_CASE
 }
 
+enum class MaterialType(val id: String) {
+    ACRYLIC("acrylic"),
+    WOOD("wood"),
+    LEATHER("leather"),
+    METAL("metal"),
+    PVC("pvc"),
+    CERAMIC("ceramic"),
+    GLASS("glass");
+
+    companion object {
+        fun fromString(str: String?): MaterialType = when (str?.lowercase()?.trim()) {
+            "acrylic", "亚克力" -> ACRYLIC
+            "wood", "木材", "木质", "椴木板" -> WOOD
+            "leather", "皮革", "皮质", "植鞣革" -> LEATHER
+            "metal", "金属", "铝板" -> METAL
+            "pvc" -> PVC
+            "ceramic", "陶瓷" -> CERAMIC
+            "glass", "玻璃" -> GLASS
+            else -> ACRYLIC
+        }
+    }
+}
+
+enum class AlignmentMode(val id: String) {
+    FLATBED_CAMERA("flatbed_camera"),
+    FLATBED_MINI("flatbed_mini"),
+    ROTARY_JIG("rotary_jig"),
+    ROLL_UV_DTF("roll_uv_dtf")
+}
+
 @Serializable
 data class Substrate(
     val id: String,

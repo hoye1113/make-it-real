@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.CanvasLayer
 import com.eufymake.real.model.LayerType
 
@@ -18,6 +19,7 @@ fun ElementsDialog(
     onAddElementLayer: (CanvasLayer) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalStrings.current
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(20.dp),
@@ -25,7 +27,7 @@ fun ElementsDialog(
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text("Select Element Shape", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(strings.canvas.selectShapeTitle, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(14.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -49,7 +51,7 @@ fun ElementsDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Circle")
+                        Text(strings.canvas.shapeCircle)
                     }
 
                     Button(
@@ -70,7 +72,7 @@ fun ElementsDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Rectangle")
+                        Text(strings.canvas.shapeRectangle)
                     }
                 }
             }

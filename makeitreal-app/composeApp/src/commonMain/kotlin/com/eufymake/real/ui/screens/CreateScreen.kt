@@ -34,6 +34,7 @@ import com.eufymake.real.ui.components.SubstrateConfigSheet
 import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactileClick
 import com.eufymake.real.ui.util.tactilePress
 
 data class InspirationCardMeta(
@@ -202,7 +203,7 @@ fun CreateScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 18.dp)
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp)
                     ) {
                         // Card Header
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -286,7 +287,7 @@ fun CreateScreen(
                                     if (isSelected) Color(0xFF1A1A1A) else Color(0xFFE5E7EB),
                                     RoundedCornerShape(16.dp)
                                 )
-                                .clickable { selectedFilterIndex = idx }
+                                .tactileClick { selectedFilterIndex = idx }
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -315,7 +316,7 @@ fun CreateScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(16.dp))
-                                        .clickable {
+                                        .tactileClick {
                                             onSelectInspirationItem?.invoke(item.title, item.imageName, item.substrateId) ?: run {
                                                 val targetSub = Substrate.ALL.firstOrNull { it.id == item.substrateId } ?: Substrate.DEFAULT
                                                 onSelectSubstrate(targetSub)
@@ -358,14 +359,18 @@ fun CreateScreen(
                                                 )
                                             }
 
-                                            // Bottom-right "做同款" pill
+                                            // Bottom-right "做同款" dedicated action pill
                                             Box(
                                                 modifier = Modifier
                                                     .align(Alignment.BottomEnd)
                                                     .padding(6.dp)
                                                     .clip(RoundedCornerShape(10.dp))
-                                                    .background(Color.Black.copy(alpha = 0.65f))
-                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    .background(Color.Black.copy(alpha = 0.75f))
+                                                    .tactileClick {
+                                                        val targetSub = Substrate.ALL.firstOrNull { it.id == item.substrateId } ?: Substrate.DEFAULT
+                                                        onSelectSubstrate(targetSub)
+                                                    }
+                                                    .padding(horizontal = 8.dp, vertical = 3.dp)
                                             ) {
                                                 Text(
                                                     text = strings.canvas.makeSimilar,
@@ -392,7 +397,10 @@ fun CreateScreen(
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier.weight(1f, fill = false)
+                                                ) {
                                                     Box(
                                                         modifier = Modifier
                                                             .size(16.dp)
@@ -404,9 +412,12 @@ fun CreateScreen(
                                                         text = item.author,
                                                         fontSize = 10.sp,
                                                         color = Color(0xFF8E8E93),
-                                                        maxLines = 1
+                                                        maxLines = 1,
+                                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                     )
                                                 }
+
+                                                Spacer(modifier = Modifier.width(6.dp))
 
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     Icon(
@@ -416,9 +427,12 @@ fun CreateScreen(
                                                         modifier = Modifier.size(12.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(2.dp))
+                                                    val formattedLikes = if (item.likes >= 1000) "${(item.likes / 100) / 10f}k" else "${item.likes}"
                                                     Text(
-                                                        text = item.likes.toString(),
+                                                        text = formattedLikes,
                                                         fontSize = 10.sp,
+                                                        maxLines = 1,
+                                                        softWrap = false,
                                                         color = Color(0xFF8E8E93)
                                                     )
                                                 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eufymake.real.model.Project
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactileClick
 
 @Composable
 fun ProjectCard(
@@ -148,7 +149,10 @@ fun ProjectCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(18.dp)
@@ -173,12 +177,14 @@ fun ProjectCard(
                         )
                     }
 
-                    // Like button with Micro-Bounce Animation
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    // Like button with Micro-Bounce Animation & Formatted Count
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable(onClick = onLikeClick)
+                            .tactileClick(onClick = onLikeClick)
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
                         Icon(
@@ -203,10 +209,13 @@ fun ProjectCard(
                                 }
                             }
                         ) { count ->
+                            val formattedCount = if (count >= 1000) "${(count / 100) / 10f}k" else "$count"
                             Text(
-                                text = "$count",
+                                text = formattedCount,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                softWrap = false,
                                 color = if (project.isLiked) Color(0xFFEF4444) else Color(0xFF64748B)
                             )
                         }

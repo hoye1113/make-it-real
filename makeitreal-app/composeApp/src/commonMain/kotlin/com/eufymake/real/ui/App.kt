@@ -369,6 +369,7 @@ fun App() {
                         pointsState = pointsState,
                         onCheckIn = { pointsRepo.checkIn() },
                         onRedeem = { itemId -> pointsRepo.redeemMallItem(itemId) },
+                        onReset = { pointsRepo.resetPoints() },
                         onDismiss = { showPointsMall = false }
                     )
                 }

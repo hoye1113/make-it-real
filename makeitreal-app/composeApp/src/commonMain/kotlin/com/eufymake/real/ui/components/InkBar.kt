@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,7 +59,7 @@ fun InkBar(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Channel code badge (C, M, Y, K, W, G)
+        // Channel code badge (C, M, Y, K, W, G) with optical vertical centering
         Box(
             modifier = Modifier
                 .size(20.dp)
@@ -68,9 +69,12 @@ fun InkBar(
         ) {
             Text(
                 text = channel.code,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 11.sp,
+                    lineHeight = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             )
         }
     }

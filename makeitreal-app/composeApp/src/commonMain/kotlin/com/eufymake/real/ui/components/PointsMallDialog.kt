@@ -21,19 +21,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.MallItem
 import com.eufymake.real.model.PointsState
 import com.eufymake.real.model.RewardTask
 import com.eufymake.real.ui.theme.BrandAccent
 import com.eufymake.real.ui.theme.BrandOrange
+import com.eufymake.real.ui.util.tactileClick
 
 @Composable
 fun PointsMallDialog(
     pointsState: PointsState,
     onCheckIn: () -> Unit,
     onRedeem: (String) -> Unit,
+    onReset: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalStrings.current
     var selectedTab by remember { mutableStateOf(0) } // 0: Tasks, 1: Rewards Mall
 
     Dialog(onDismissRequest = onDismiss) {
@@ -45,7 +49,7 @@ fun PointsMallDialog(
                 .fillMaxHeight(0.85f)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Header with points badge
+                // Header with points badge & Reset tool
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -63,17 +67,33 @@ fun PointsMallDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Points & AI Hub",
+                                text = strings.points.pointsHubTitle,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
-                            IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close",
-                                    tint = Color.White
-                                )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (onReset != null) {
+                                    IconButton(
+                                        onClick = onReset,
+                                        modifier = Modifier.size(28.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = strings.points.resetMockData,
+                                            tint = Color.White.copy(alpha = 0.85f),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                }
+                                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = strings.common.close,
+                                        tint = Color.White
+                                    )
+                                }
                             }
                         }
 
@@ -86,7 +106,7 @@ fun PointsMallDialog(
                         ) {
                             Column {
                                 Text(
-                                    text = "Available Balance",
+                                    text = strings.points.availableBalance,
                                     fontSize = 11.sp,
                                     color = Color(0xFF94A3B8)
                                 )
@@ -106,13 +126,13 @@ fun PointsMallDialog(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = "pts",
+                                        text = strings.points.pts,
                                         fontSize = 13.sp,
                                         color = Color(0xFF94A3B8)
                                     )
                                 }
                                 Text(
-                                    text = "${pointsState.aiCredits} AI Relief Credits",
+                                    text = "${pointsState.aiCredits} ${strings.points.aiReliefCredits}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF38BDF8)
@@ -130,7 +150,7 @@ fun PointsMallDialog(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Text(
-                                    text = if (pointsState.isCheckedInToday) "Checked-In" else "+15 Check-in",
+                                    text = if (pointsState.isCheckedInToday) strings.points.claimed else strings.points.checkInReward,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
                                 )
@@ -153,12 +173,12 @@ fun PointsMallDialog(
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(if (selectedTab == 0) Color.White else Color.Transparent)
-                            .clickable { selectedTab = 0 }
+                            .tactileClick { selectedTab = 0 }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Daily Tasks",
+                            text = strings.points.tabDailyTasks,
                             fontSize = 13.sp,
                             fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
                             color = if (selectedTab == 0) Color(0xFF0F172A) else Color(0xFF64748B)
@@ -170,12 +190,12 @@ fun PointsMallDialog(
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(if (selectedTab == 1) Color.White else Color.Transparent)
-                            .clickable { selectedTab = 1 }
+                            .tactileClick { selectedTab = 1 }
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Rewards Mall",
+                            text = strings.points.tabRewardsMall,
                             fontSize = 13.sp,
                             fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
                             color = if (selectedTab == 1) Color(0xFF0F172A) else Color(0xFF64748B)
@@ -193,14 +213,15 @@ fun PointsMallDialog(
                 ) {
                     if (selectedTab == 0) {
                         items(pointsState.tasks) { task ->
-                            TaskRow(task = task)
+                            TaskRow(task = task, strings = strings)
                         }
                     } else {
                         items(pointsState.mallItems) { item ->
                             MallItemRow(
                                 item = item,
                                 canAfford = pointsState.totalPoints >= item.pointsCost,
-                                onRedeem = { onRedeem(item.id) }
+                                onRedeem = { onRedeem(item.id) },
+                                strings = strings
                             )
                         }
                     }
@@ -211,7 +232,7 @@ fun PointsMallDialog(
 }
 
 @Composable
-private fun TaskRow(task: RewardTask) {
+private fun TaskRow(task: RewardTask, strings: com.eufymake.real.i18n.AppStrings) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -246,7 +267,7 @@ private fun TaskRow(task: RewardTask) {
                     color = Color(0xFF0F172A)
                 )
                 Text(
-                    text = "+${task.pointsReward} Points",
+                    text = strings.points.taskReward(task.pointsReward),
                     fontSize = 11.sp,
                     color = Color(0xFFD97706),
                     fontWeight = FontWeight.Medium
@@ -261,7 +282,7 @@ private fun TaskRow(task: RewardTask) {
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
-                text = if (task.isCompleted) "Done" else "${task.progress}/${task.maxProgress}",
+                text = if (task.isCompleted) strings.points.completed else "${task.progress}/${task.maxProgress}",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (task.isCompleted) Color(0xFF64748B) else BrandAccent
@@ -274,7 +295,8 @@ private fun TaskRow(task: RewardTask) {
 private fun MallItemRow(
     item: MallItem,
     canAfford: Boolean,
-    onRedeem: () -> Unit
+    onRedeem: () -> Unit,
+    strings: com.eufymake.real.i18n.AppStrings
 ) {
     Row(
         modifier = Modifier
@@ -302,7 +324,7 @@ private fun MallItemRow(
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "${item.pointsCost} pts",
+                    text = strings.points.pointsCost(item.pointsCost),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = BrandOrange
@@ -328,7 +350,7 @@ private fun MallItemRow(
             modifier = Modifier.height(34.dp)
         ) {
             Text(
-                text = if (item.stockCount <= 0) "Sold Out" else if (canAfford) "Redeem" else "Low Pts",
+                text = if (item.stockCount <= 0) strings.points.soldOut else if (canAfford) strings.points.redeem else strings.points.lowPoints,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )

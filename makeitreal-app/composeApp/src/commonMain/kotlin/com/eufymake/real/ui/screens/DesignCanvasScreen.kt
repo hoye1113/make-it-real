@@ -42,6 +42,7 @@ import com.eufymake.real.ui.theme.BrandBlack
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.util.bounceClick
 import com.eufymake.real.ui.util.rememberAppImage
+import com.eufymake.real.ui.util.tactileClick
 import com.eufymake.real.ui.util.tactilePress
 import kotlin.math.roundToInt
 
@@ -82,8 +83,17 @@ fun DesignCanvasScreen(
 ) {
     val strings = LocalStrings.current
     var selectedLayerId by remember { mutableStateOf<String?>(draft.layers.firstOrNull()?.id) }
-
     val selectedLayer = draft.layers.firstOrNull { it.id == selectedLayerId }
+
+    var currentAlignmentMode by remember { mutableStateOf(AlignmentMode.FLATBED_CAMERA) }
+    var isAlignmentDropdownExpanded by remember { mutableStateOf(false) }
+
+    fun AlignmentMode.label(): String = when (this) {
+        AlignmentMode.FLATBED_CAMERA -> strings.canvas.alignModeFlatbedCamera
+        AlignmentMode.FLATBED_MINI -> strings.canvas.alignModeFlatbedMini
+        AlignmentMode.ROTARY_JIG -> strings.canvas.alignModeRotaryJig
+        AlignmentMode.ROLL_UV_DTF -> strings.canvas.alignModeRollUvDtf
+    }
 
     // Drawer visibility states
 
@@ -141,7 +151,16 @@ fun DesignCanvasScreen(
 
                 ) {
 
-                    IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
+                    IconButton(
+                        onClick = {
+                            if (selectedLayer != null) {
+                                selectedLayerId = null
+                            } else {
+                                onBack()
+                            }
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
 
                         Icon(
 
@@ -155,43 +174,63 @@ fun DesignCanvasScreen(
 
                     }
 
-                    // Center Dropdown Pill: "标准 摄像头对齐 v"
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFF2F3F5))
-                            .clickable {
-                                toastMessage = strings.canvas.cameraAligned
+                    // Center Dropdown Pill: 4 alignment modes
+                    Box {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFFF2F3F5))
+                                .tactileClick { isAlignmentDropdownExpanded = true }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = currentAlignmentMode.label(),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF1A1A1A)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = Color(0xFF8E8E93),
+                                    modifier = Modifier.size(16.dp)
+                                )
                             }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = strings.canvas.cameraAligned,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1A1A1A)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = Color(0xFF8E8E93),
-                                modifier = Modifier.size(16.dp)
-                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = isAlignmentDropdownExpanded,
+                            onDismissRequest = { isAlignmentDropdownExpanded = false }
+                        ) {
+                            AlignmentMode.entries.forEach { mode ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = mode.label(),
+                                            fontWeight = if (mode == currentAlignmentMode) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (mode == currentAlignmentMode) BrandGreen else Color(0xFF1A1A1A)
+                                        )
+                                    },
+                                    onClick = {
+                                        currentAlignmentMode = mode
+                                        isAlignmentDropdownExpanded = false
+                                        toastMessage = mode.label()
+                                    }
+                                )
+                            }
                         }
                     }
 
-                    // Right Viewfinder / Camera align icon [o] with proper 44dp touch target
+                    // Right Viewfinder / Camera align icon [o] triggers dropdown
                     IconButton(
-                        onClick = {
-                            toastMessage = strings.canvas.cameraAligned
-                        },
+                        onClick = { isAlignmentDropdownExpanded = true },
                         modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             Icons.Default.CropFree,
-                            contentDescription = strings.canvas.cameraAligned,
+                            contentDescription = currentAlignmentMode.label(),
                             tint = Color(0xFF1A1A1A),
                             modifier = Modifier.size(22.dp)
                         )
@@ -222,7 +261,7 @@ fun DesignCanvasScreen(
 
                 // Physical Substrate Bed
 
-                if (draft.substrate.shape == SubstrateShape.CYLINDER) {
+                if (draft.substrate.shape == SubstrateShape.CYLINDER || currentAlignmentMode == AlignmentMode.ROTARY_JIG) {
 
                     // Cylindrical Mug Unrolled Canvas (Frame 0145)
 
@@ -445,8 +484,7 @@ fun DesignCanvasScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
                             .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(16.dp))
-                            .tactilePress()
-                            .clickable { onNavigateToCraftMode() }
+                            .tactileClick { onNavigateToCraftMode() }
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
 
@@ -566,7 +604,7 @@ fun DesignCanvasScreen(
 
                     ) {
 
-                        if (draft.substrate.shape == SubstrateShape.CYLINDER) {
+                        if (draft.substrate.shape == SubstrateShape.CYLINDER || currentAlignmentMode == AlignmentMode.ROTARY_JIG) {
 
                             Box(
 
@@ -701,9 +739,9 @@ fun DesignCanvasScreen(
                             }
                             item {
                                 DockItem(
-                                    icon = Icons.Default.AddCircleOutline,
+                                    icon = Icons.Default.Check,
                                     label = strings.common.done,
-                                    onClick = { showUploadDrawer = true }
+                                    onClick = { selectedLayerId = null }
                                 )
                             }
                         }
