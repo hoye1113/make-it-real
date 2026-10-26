@@ -50,6 +50,7 @@ jobs:
 
       - name: Sync to ModelScope (Domestic High-Speed CDN)
         if: env.MODELSCOPE_API_TOKEN != ''
+        continue-on-error: true
         env:
           MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
         run: |
@@ -67,14 +68,14 @@ jobs:
               print('Uploading APK to ModelScope...')
               api.upload_file(
                   repo_id=repo_id,
-                  file_path='release-assets/MakeItReal-debug.apk',
+                  path_or_fileobj='release-assets/MakeItReal-debug.apk',
                   path_in_repo='MakeItReal-latest.apk',
                   commit_message='Release latest APK (commit ${{ github.sha }})'
               )
               print('Uploading latest.json to ModelScope...')
               api.upload_file(
                   repo_id=repo_id,
-                  file_path='release-assets/latest.json',
+                  path_or_fileobj='release-assets/latest.json',
                   path_in_repo='latest.json',
                   commit_message='Update latest.json'
               )
