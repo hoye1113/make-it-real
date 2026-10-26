@@ -32,10 +32,54 @@ jobs:
           cd makeitreal-app
           ./gradlew :composeApp:assembleDebug --stacktrace
 
-      - name: Prepare APK Asset
+      - name: Prepare APK Asset & Generate Manifest
         run: |
           mkdir -p release-assets
           cp makeitreal-app/composeApp/build/outputs/apk/debug/composeApp-debug.apk release-assets/MakeItReal-debug.apk
+          cat << 'EOF' > release-assets/latest.json
+          {
+            "versionCode": 1,
+            "versionName": "1.0.0",
+            "minSupportVersionCode": 1,
+            "title": "MakeItReal 智能 UV 浮雕客户端",
+            "releaseNotes": "1. 移除模拟状态栏与Home横条，全屏沉浸适配真实刘海屏与挖孔屏\n2. 修复 Android 端静态图片加载，基于原生 Assets 跨平台通道渲染\n3. 接入魔搭社区国内极速下载与 OTA 管道",
+            "downloadUrl": "https://www.modelscope.cn/models/HoyeWork/makeitreal-app/resolve/master/MakeItReal-latest.apk",
+            "forceUpdate": false
+          }
+          EOF
+
+      - name: Sync to ModelScope (Domestic High-Speed CDN)
+        if: env.MODELSCOPE_API_TOKEN != ''
+        env:
+          MODELSCOPE_API_TOKEN: ${{ secrets.MODELSCOPE_API_TOKEN }}
+        run: |
+          pip install --upgrade modelscope
+          python -c "
+          import os
+          import json
+          from modelscope.hub.api import HubApi
+
+          token = os.environ.get('MODELSCOPE_API_TOKEN')
+          if token:
+              api = HubApi()
+              api.login(token)
+              repo_id = 'HoyeWork/makeitreal-app'
+              print('Uploading APK to ModelScope...')
+              api.upload_file(
+                  repo_id=repo_id,
+                  file_path='release-assets/MakeItReal-debug.apk',
+                  path_in_repo='MakeItReal-latest.apk',
+                  commit_message='Release latest APK (commit ${{ github.sha }})'
+              )
+              print('Uploading latest.json to ModelScope...')
+              api.upload_file(
+                  repo_id=repo_id,
+                  file_path='release-assets/latest.json',
+                  path_in_repo='latest.json',
+                  commit_message='Update latest.json'
+              )
+              print('Successfully synced to ModelScope!')
+          "
 
       - name: Upload Action Artifact
         uses: actions/upload-artifact@v4
@@ -55,10 +99,14 @@ jobs:
 
             - **构建触发**：${{ github.event_name }}
             - **最新提交**：`${{ github.sha }}`
-            - **安装说明**：手机自带浏览器打开此页面，点击下方 `MakeItReal-debug.apk` 下载，下载完成后点击即可直接安装。
+            - **国内极速下载直链（魔搭阿里云 CDN，推荐国内用户）**：
+              👉 [直接下载 MakeItReal-latest.apk (魔搭 CDN 直链)](https://www.modelscope.cn/models/HoyeWork/makeitreal-app/resolve/master/MakeItReal-latest.apk)
+            - **GitHub 备用下载**：下方 `MakeItReal-debug.apk`
 
             > 💡 **安装提示**：Android 手机首次安装可能会弹出“来自未知来源应用”安全拦截，在设置中勾选“允许本次安装”即可正常体验。
-          files: release-assets/MakeItReal-debug.apk
+          files: |
+            release-assets/MakeItReal-debug.apk
+            release-assets/latest.json
           prerelease: true
           make_latest: true
         env:

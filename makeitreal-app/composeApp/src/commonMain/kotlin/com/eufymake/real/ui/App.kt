@@ -23,8 +23,6 @@ import com.eufymake.real.ui.components.*
 import com.eufymake.real.ui.screens.*
 import com.eufymake.real.ui.theme.BrandGreen
 import com.eufymake.real.ui.theme.MakeItRealTheme
-import com.eufymake.real.ui.theme.StudioDarkStatusBar
-import com.eufymake.real.ui.theme.StudioDarkBottomBar
 import com.eufymake.real.ui.theme.StudioDarkWorkspace
 
 enum class AppTab {
@@ -76,14 +74,12 @@ fun App() {
         val activeDraft = currentDraft
         val isStudioDark = activeDraft != null && studioScreen == StudioScreen.CRAFT_3D
 
-        Column(modifier = Modifier.fillMaxSize().background(if (isStudioDark) StudioDarkWorkspace else Color(0xFFF7F8FA))) {
-            // Simulated Mobile Status Bar (Prevents window title bar clipping)
-            MobileStatusBar(
-                time = "09:41",
-                isDark = isStudioDark,
-                modifier = Modifier.background(if (isStudioDark) StudioDarkStatusBar else Color(0xFFF7F8FA))
-            )
-
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(if (isStudioDark) StudioDarkWorkspace else Color(0xFFF7F8FA))
+                .statusBarsPadding()
+        ) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (activeDraft != null) {
                     // In Studio Mode
@@ -393,12 +389,6 @@ fun App() {
                     )
                 }
             }
-
-            // Simulated Bottom Home Indicator Bar
-            MobileHomeIndicator(
-                isDark = isStudioDark,
-                modifier = Modifier.background(if (isStudioDark) StudioDarkBottomBar else Color.White)
-            )
         }
     }
 }
