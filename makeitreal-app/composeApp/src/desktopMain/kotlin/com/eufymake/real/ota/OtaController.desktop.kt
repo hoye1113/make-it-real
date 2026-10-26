@@ -17,6 +17,8 @@ actual object OtaController {
 
     actual fun downloadUpdate() {}
 
+    actual fun cancelDownload() {}
+
     actual fun installUpdate() {}
 
     actual fun dismiss() {

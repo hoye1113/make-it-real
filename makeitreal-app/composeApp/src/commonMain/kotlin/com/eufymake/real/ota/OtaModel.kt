@@ -15,12 +15,30 @@ data class OtaManifest(
     val publishTime: String = ""
 )
 
+enum class OtaErrorStep {
+    CHECK,
+    DOWNLOAD,
+    INSTALL
+}
+
 sealed interface OtaState {
     data object Idle : OtaState
     data object Checking : OtaState
     data class UpdateAvailable(val manifest: OtaManifest) : OtaState
-    data class Downloading(val progress: Float, val currentBytes: Long, val totalBytes: Long) : OtaState
-    data class ReadyToInstall(val filePath: String, val manifest: OtaManifest) : OtaState
+    data class Downloading(
+        val progress: Float,
+        val currentBytes: Long,
+        val totalBytes: Long,
+        val manifest: OtaManifest? = null
+    ) : OtaState
+    data class ReadyToInstall(
+        val filePath: String,
+        val manifest: OtaManifest
+    ) : OtaState
     data object UpToDate : OtaState
-    data class Error(val message: String) : OtaState
+    data class Error(
+        val message: String,
+        val step: OtaErrorStep = OtaErrorStep.CHECK,
+        val manifest: OtaManifest? = null
+    ) : OtaState
 }

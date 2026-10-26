@@ -16,6 +16,7 @@ interface AppStrings {
     val substrate: SubstrateStrings
     val dialog: DialogStrings
     val points: PointsStrings
+    val ota: OtaStrings
 }
 
 interface NavStrings {
@@ -470,4 +471,25 @@ interface PointsStrings {
     val resetMockData: String
     fun pointsCost(pts: Int): String
     fun taskReward(pts: Int): String
+}
+
+interface OtaStrings {
+    val newVersionFound: String
+    val downloadingUpdate: String
+    val downloadComplete: String
+    val readyToInstallDesc: String
+    val updateNotesTitle: String
+    val defaultNotes: String
+    val packageSize: String
+    fun packageSizeMb(mb: Long): String
+    val updateNow: String
+    val installNow: String
+    val later: String
+    val retry: String
+    val cancelDownload: String
+    val checkUpdate: String
+    val upToDateTitle: String
+    val upToDateDesc: String
+    val ok: String
+    val updateErrorTitle: String
 }

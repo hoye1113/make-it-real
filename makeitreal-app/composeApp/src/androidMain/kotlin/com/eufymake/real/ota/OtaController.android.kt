@@ -6,8 +6,10 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,6 +27,7 @@ actual object OtaController {
 
     private val json = Json { ignoreUnknownKeys = true }
     private val scope = CoroutineScope(Dispatchers.IO)
+    private var downloadJob: Job? = null
 
     private val _state = MutableStateFlow<OtaState>(OtaState.Idle)
     actual val state: StateFlow<OtaState> = _state.asStateFlow()
@@ -98,22 +101,30 @@ actual object OtaController {
                     _state.value = if (manual) OtaState.UpToDate else OtaState.Idle
                 }
             } catch (e: Throwable) {
-                _state.value = if (manual) OtaState.Error(e.message ?: "检查更新失败") else OtaState.Idle
+                _state.value = if (manual) {
+                    OtaState.Error(
+                        message = e.message ?: "检查更新失败",
+                        step = OtaErrorStep.CHECK,
+                        manifest = null
+                    )
+                } else {
+                    OtaState.Idle
+                }
             }
         }
     }
 
     actual fun downloadUpdate() {
         val manifest = currentManifest ?: return
-        if (_state.value is OtaState.Downloading) return
+        if (_state.value is OtaState.Downloading || downloadJob?.isActive == true) return
 
         val targetApk = File(getApkDir(), "MakeItReal-v${manifest.versionName}.apk")
         val tmpApk = File(getApkDir(), "MakeItReal-v${manifest.versionName}.apk.tmp")
 
-        scope.launch {
-            try {
-                _state.value = OtaState.Downloading(0f, 0L, manifest.apkSize)
+        _state.value = OtaState.Downloading(0f, 0L, manifest.apkSize, manifest)
 
+        downloadJob = scope.launch {
+            try {
                 val conn = openConnectionWithRedirects(manifest.downloadUrl)
                 val totalLength = conn.contentLengthLong.takeIf { it > 0 } ?: manifest.apkSize
 
@@ -134,7 +145,7 @@ actual object OtaController {
                             if (downloaded - lastReported > 131072 || downloaded == totalLength) {
                                 lastReported = downloaded
                                 val progress = if (totalLength > 0) (downloaded.toFloat() / totalLength).coerceIn(0f, 1f) else 0f
-                                _state.value = OtaState.Downloading(progress, downloaded, totalLength)
+                                _state.value = OtaState.Downloading(progress, downloaded, totalLength, manifest)
                             }
                         }
                         output.flush()
@@ -161,11 +172,30 @@ actual object OtaController {
 
                 // Trigger install
                 installUpdate()
+            } catch (e: CancellationException) {
+                tmpApk.delete()
             } catch (e: Throwable) {
                 tmpApk.delete()
-                _state.value = OtaState.Error(e.message ?: "下载安装包失败")
+                _state.value = OtaState.Error(
+                    message = e.message ?: "下载安装包失败",
+                    step = OtaErrorStep.DOWNLOAD,
+                    manifest = manifest
+                )
+            } finally {
+                downloadJob = null
             }
         }
+    }
+
+    actual fun cancelDownload() {
+        downloadJob?.cancel()
+        downloadJob = null
+        val manifest = currentManifest
+        if (manifest != null) {
+            val tmpApk = File(getApkDir(), "MakeItReal-v${manifest.versionName}.apk.tmp")
+            if (tmpApk.exists()) tmpApk.delete()
+        }
+        _state.value = OtaState.Idle
     }
 
     actual fun installUpdate() {
@@ -177,7 +207,29 @@ actual object OtaController {
         }
 
         try {
-            // Check unknown sources installation permission on Android 8.0+
+            // 1. Verify APK file existence and readability
+            if (!apkFile.exists() || !apkFile.canRead()) {
+                _state.value = OtaState.Error(
+                    message = "安装包文件不存在或不可读",
+                    step = OtaErrorStep.INSTALL,
+                    manifest = currentManifest
+                )
+                return
+            }
+
+            // 2. Verify APK package archive integrity and matching packageName
+            val archiveInfo = ctx.packageManager.getPackageArchiveInfo(apkFile.absolutePath, 0)
+            if (archiveInfo == null || archiveInfo.packageName != ctx.packageName) {
+                apkFile.delete()
+                _state.value = OtaState.Error(
+                    message = "安装包解析失败或包名不匹配",
+                    step = OtaErrorStep.INSTALL,
+                    manifest = currentManifest
+                )
+                return
+            }
+
+            // 3. Check unknown sources installation permission on Android 8.0+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (!ctx.packageManager.canRequestPackageInstalls()) {
                     val settingsIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
@@ -202,12 +254,20 @@ actual object OtaController {
             }
             ctx.startActivity(installIntent)
         } catch (e: Throwable) {
-            _state.value = OtaState.Error("调起安装程序失败: ${e.message}")
+            _state.value = OtaState.Error(
+                message = "调起安装程序失败: ${e.message}",
+                step = OtaErrorStep.INSTALL,
+                manifest = currentManifest
+            )
         }
     }
 
     actual fun dismiss() {
-        _state.value = OtaState.Idle
+        if (downloadJob?.isActive == true) {
+            cancelDownload()
+        } else {
+            _state.value = OtaState.Idle
+        }
     }
 
     private fun checkMd5(file: File, expectedMd5: String): Boolean {

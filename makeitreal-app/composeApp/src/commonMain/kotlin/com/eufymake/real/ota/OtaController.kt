@@ -6,6 +6,7 @@ expect object OtaController {
     val state: StateFlow<OtaState>
     fun checkForUpdate(manual: Boolean = false)
     fun downloadUpdate()
+    fun cancelDownload()
     fun installUpdate()
     fun dismiss()
     fun getCurrentVersionName(): String

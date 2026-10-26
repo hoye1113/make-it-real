@@ -454,4 +454,25 @@ object EnStrings : AppStrings {
         override fun pointsCost(pts: Int) = "$pts pts"
         override fun taskReward(pts: Int) = "+$pts pts"
     }
+
+    override val ota = object : OtaStrings {
+        override val newVersionFound = "New Version Found"
+        override val downloadingUpdate = "Downloading Update"
+        override val downloadComplete = "Download Complete"
+        override val readyToInstallDesc = "Ready to install. Tap install to enjoy the new release."
+        override val updateNotesTitle = "What's New:"
+        override val defaultNotes = "Performance optimizations and experience improvements."
+        override val packageSize = "Package Size"
+        override fun packageSizeMb(mb: Long) = "Package Size: ~${mb} MB"
+        override val updateNow = "Update Now"
+        override val installNow = "Install Now"
+        override val later = "Later"
+        override val retry = "Retry"
+        override val cancelDownload = "Cancel"
+        override val checkUpdate = "Check for Updates"
+        override val upToDateTitle = "Up to Date"
+        override val upToDateDesc = "You are currently running the latest version."
+        override val ok = "OK"
+        override val updateErrorTitle = "Update Notice"
+    }
 }

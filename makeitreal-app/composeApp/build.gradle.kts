@@ -53,6 +53,12 @@ kotlin {
     }
 }
 
+val envVersionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 2
+val envVersionName = System.getenv("VERSION_NAME") ?: "1.0.1"
+val keystorePass = System.getenv("KEYSTORE_PASSWORD") ?: "makeitreal123"
+val keyAliasName = System.getenv("KEYSTORE_ALIAS") ?: "makeitreal"
+val keyPass = System.getenv("KEY_PASSWORD") ?: keystorePass
+
 android {
     namespace = "com.eufymake.real"
     compileSdk = 34
@@ -61,16 +67,16 @@ android {
         applicationId = "com.eufymake.real"
         minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = envVersionCode
+        versionName = envVersionName
     }
 
     signingConfigs {
         create("release") {
             storeFile = rootProject.file("keystore/makeitreal.jks")
-            storePassword = "makeitreal123"
-            keyAlias = "makeitreal"
-            keyPassword = "makeitreal123"
+            storePassword = keystorePass
+            keyAlias = keyAliasName
+            keyPassword = keyPass
         }
     }
 
@@ -109,7 +115,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.eufymake.real"
-            packageVersion = "1.0.0"
+            packageVersion = envVersionName
         }
     }
 }

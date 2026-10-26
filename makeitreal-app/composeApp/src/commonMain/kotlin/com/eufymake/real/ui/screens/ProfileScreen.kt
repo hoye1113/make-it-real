@@ -28,6 +28,8 @@ import com.eufymake.real.i18n.LanguageManager
 import com.eufymake.real.i18n.LocalStrings
 import com.eufymake.real.model.Draft
 import com.eufymake.real.model.PointsState
+import com.eufymake.real.ota.OtaController
+import com.eufymake.real.ota.OtaState
 import com.eufymake.real.ui.theme.BrandGreen
 
 @Composable
@@ -49,6 +51,7 @@ fun ProfileScreen(
     var renameInputText by remember { mutableStateOf("") }
     var draftToDelete by remember { mutableStateOf<Draft?>(null) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    val otaState by OtaController.state.collectAsState()
     val tabs = listOf(strings.canvas.newCanvas, strings.profile.myCreations, strings.community.tabFeatured, strings.profile.drafts)
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF7F8FA))) {
@@ -90,17 +93,33 @@ fun ProfileScreen(
                                 shape = RoundedCornerShape(20.dp),
                                 color = Color.White,
                                 shadowElevation = 1.dp,
-                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable {
-                                    com.eufymake.real.ota.OtaController.checkForUpdate(manual = true)
-                                }
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .defaultMinSize(minHeight = 36.dp)
+                                    .clickable(enabled = otaState !is OtaState.Checking) {
+                                        OtaController.checkForUpdate(manual = true)
+                                    }
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Icon(Icons.Default.SystemUpdate, contentDescription = "OTA Update", tint = BrandGreen, modifier = Modifier.size(15.dp))
-                                    Text("v${com.eufymake.real.ota.OtaController.getCurrentVersionName()}", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                    if (otaState is OtaState.Checking) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(14.dp),
+                                            strokeWidth = 2.dp,
+                                            color = BrandGreen
+                                        )
+                                    } else {
+                                        Icon(
+                                            Icons.Default.SystemUpdate,
+                                            contentDescription = strings.ota.checkUpdate,
+                                            tint = BrandGreen,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                    }
+                                    Text("v${OtaController.getCurrentVersionName()}", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
                                 }
                             }
 
@@ -109,7 +128,10 @@ fun ProfileScreen(
                                 shape = RoundedCornerShape(20.dp),
                                 color = Color.White,
                                 shadowElevation = 1.dp,
-                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { showLanguageDialog = true }
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .defaultMinSize(minHeight = 36.dp)
+                                    .clickable { showLanguageDialog = true }
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),

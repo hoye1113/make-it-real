@@ -454,4 +454,25 @@ object ZhStrings : AppStrings {
         override fun pointsCost(pts: Int) = "$pts 积分"
         override fun taskReward(pts: Int) = "+$pts 积分"
     }
+
+    override val ota = object : OtaStrings {
+        override val newVersionFound = "发现新版本"
+        override val downloadingUpdate = "正在下载更新"
+        override val downloadComplete = "下载完成"
+        override val readyToInstallDesc = "准备就绪，点击安装即可体验新版本"
+        override val updateNotesTitle = "更新内容："
+        override val defaultNotes = "性能优化与体验改进"
+        override val packageSize = "安装包大小"
+        override fun packageSizeMb(mb: Long) = "安装包大小：约 $mb MB"
+        override val updateNow = "立即更新"
+        override val installNow = "立即安装"
+        override val later = "稍后再说"
+        override val retry = "重试"
+        override val cancelDownload = "取消下载"
+        override val checkUpdate = "检查更新"
+        override val upToDateTitle = "已是最新版本"
+        override val upToDateDesc = "当前使用的已是最新版本，无需更新"
+        override val ok = "知道了"
+        override val updateErrorTitle = "更新提示"
+    }
 }
