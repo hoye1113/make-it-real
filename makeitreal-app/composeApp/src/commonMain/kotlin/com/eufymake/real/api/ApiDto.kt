@@ -1,22 +1,19 @@
 package com.eufymake.real.api
 
 import com.eufymake.real.model.*
-import kotlinx.serialization.Serializable
 
 /**
- * Standard API Envelope for all backend JSON responses.
+ * Standard API Envelope for backend JSON responses.
  */
-@Serializable
 data class ApiResponse<T>(
     val code: Int = 200,
     val message: String = "SUCCESS",
     val data: T? = null,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = 0L
 )
 
 // Request & Response DTOs
 
-@Serializable
 data class PublishProjectRequest(
     val title: String,
     val description: String,
@@ -26,7 +23,6 @@ data class PublishProjectRequest(
     val layers: List<CanvasLayer> = emptyList()
 )
 
-@Serializable
 data class AIReliefGenerateRequest(
     val prompt: String,
     val style: String = "Realistic Relief",
@@ -34,21 +30,18 @@ data class AIReliefGenerateRequest(
     val maxDepthMm: Float = 2.0f
 )
 
-@Serializable
 data class AIProgressStreamDto(
     val percentage: Int,
     val stepDescription: String,
     val previewHeightmapUrl: String? = null
 )
 
-@Serializable
 data class DeviceControlRequest(
     val deviceId: String,
     val chamberLightOn: Boolean? = null,
     val airFiltrationActive: Boolean? = null
 )
 
-@Serializable
 data class StartPrintJobRequest(
     val deviceId: String,
     val draftId: String,
@@ -57,13 +50,11 @@ data class StartPrintJobRequest(
     val glossMode: GlossMode
 )
 
-@Serializable
 data class RedeemMallItemRequest(
     val itemId: String,
     val shippingAddressId: String? = null
 )
 
-@Serializable
 data class CheckInResponse(
     val totalPoints: Int,
     val consecutiveDays: Int,
@@ -71,7 +62,6 @@ data class CheckInResponse(
 )
 
 // 1. 评论模型
-@Serializable
 data class CommentDto(
     val id: String,
     val projectId: String,
@@ -79,16 +69,14 @@ data class CommentDto(
     val authorName: String,
     val authorAvatarUrl: String = "",
     val content: String,
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Long = 0L,
     val likesCount: Int = 0,
     val isLiked: Boolean = false
 )
 
-@Serializable
 data class AddCommentRequest(val content: String)
 
 // 2. 创作者名片模型
-@Serializable
 data class CreatorProfileDto(
     val creatorId: String,
     val name: String,
@@ -104,7 +92,6 @@ data class CreatorProfileDto(
     val isFollowing: Boolean = false
 )
 
-@Serializable
 data class ToggleFollowResponse(
     val creatorId: String,
     val isFollowing: Boolean,
@@ -112,7 +99,6 @@ data class ToggleFollowResponse(
 )
 
 // 3. 工艺学院教程模型
-@Serializable
 data class AcademyCourseDto(
     val id: String,
     val title: String,
@@ -126,7 +112,6 @@ data class AcademyCourseDto(
 )
 
 // 4. 赛事活动模型
-@Serializable
 data class ActivityDto(
     val id: String,
     val title: String,
@@ -138,7 +123,6 @@ data class ActivityDto(
     val tags: List<String> = emptyList()
 )
 
-@Serializable
 data class SubmitActivityEntryRequest(
     val activityId: String,
     val projectId: String,
@@ -146,7 +130,6 @@ data class SubmitActivityEntryRequest(
 )
 
 // 5. 贴纸分类与资产模型
-@Serializable
 data class StickerPackDto(
     val packId: String,
     val title: String,
@@ -154,7 +137,6 @@ data class StickerPackDto(
     val stickersCount: Int
 )
 
-@Serializable
 data class StickerItemDto(
     val id: String,
     val name: String,
@@ -164,7 +146,6 @@ data class StickerItemDto(
 )
 
 // 6. 硬件设备耗材与维护模型
-@Serializable
 data class InkLevelsDto(
     val cyanPercent: Int = 92,
     val magentaPercent: Int = 85,
@@ -175,19 +156,17 @@ data class InkLevelsDto(
     val wasteTankPercent: Int = 18    // 废墨箱容量
 )
 
-@Serializable
 data class MaintenanceRequest(
     val actionType: String // "NOZZLE_CLEAN", "INK_PURGE", "TEST_PRINT"
 )
 
 // 7. 消息通知模型
-@Serializable
 data class NotificationDto(
     val id: String,
     val type: String, // "LIKE", "COMMENT", "SYSTEM", "CONTEST"
     val title: String,
     val content: String,
-    val timestamp: Long = System.currentTimeMillis(),
+    val timestamp: Long = 0L,
     val isRead: Boolean = false,
     val jumpRoute: String = ""
 )
