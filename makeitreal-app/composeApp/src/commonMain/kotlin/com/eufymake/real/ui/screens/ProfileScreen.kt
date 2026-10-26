@@ -81,20 +81,44 @@ fun ProfileScreen(
                             }
                         }
 
-                        // Language Switch Button
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color.White,
-                            shadowElevation = 1.dp,
-                            modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { showLanguageDialog = true }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            // Version / OTA Update Check Button
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.White,
+                                shadowElevation = 1.dp,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable {
+                                    com.eufymake.real.ota.OtaController.checkForUpdate(manual = true)
+                                }
                             ) {
-                                Icon(Icons.Default.Language, contentDescription = strings.profile.language, tint = BrandGreen, modifier = Modifier.size(16.dp))
-                                Text(strings.profile.currentLangName, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(Icons.Default.SystemUpdate, contentDescription = "OTA Update", tint = BrandGreen, modifier = Modifier.size(15.dp))
+                                    Text("v${com.eufymake.real.ota.OtaController.getCurrentVersionName()}", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                }
+                            }
+
+                            // Language Switch Button
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.White,
+                                shadowElevation = 1.dp,
+                                modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { showLanguageDialog = true }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(Icons.Default.Language, contentDescription = strings.profile.language, tint = BrandGreen, modifier = Modifier.size(16.dp))
+                                    Text(strings.profile.currentLangName, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1A1A1A))
+                                }
                             }
                         }
                     }

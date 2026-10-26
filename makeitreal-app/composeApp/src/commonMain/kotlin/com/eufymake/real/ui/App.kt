@@ -42,6 +42,10 @@ fun App() {
     CompositionLocalProvider(LocalStrings provides LanguageManager.strings) {
         MakeItRealTheme {
             val strings = LocalStrings.current
+
+            LaunchedEffect(Unit) {
+                com.eufymake.real.ota.OtaController.checkForUpdate(manual = false)
+            }
             // Singletons / Repositories
         val draftRepo = remember { MockDraftRepository() }
         val communityRepo = remember { MockCommunityRepository() }
@@ -388,6 +392,9 @@ fun App() {
                         onDismiss = { showProfileAcademyDrawer = false }
                     )
                 }
+
+                // In-App OTA Update Dialog
+                OtaUpdateDialog()
             }
         }
     }

@@ -36,17 +36,24 @@ jobs:
         run: |
           mkdir -p release-assets
           cp makeitreal-app/composeApp/build/outputs/apk/debug/composeApp-debug.apk release-assets/MakeItReal-debug.apk
-          cat << 'EOF' > release-assets/latest.json
+          APK_MD5=$(md5sum release-assets/MakeItReal-debug.apk | awk '{print $1}')
+          APK_SIZE=$(stat -c%s release-assets/MakeItReal-debug.apk)
+          PUBLISH_TIME=$(date -u +"%Y-%m-%d %H:%M:%S")
+          cat << EOF > release-assets/latest.json
           {
-            "versionCode": 1,
-            "versionName": "1.0.0",
-            "minSupportVersionCode": 1,
-            "title": "MakeItReal 智能 UV 浮雕客户端",
-            "releaseNotes": "1. 移除模拟状态栏与Home横条，全屏沉浸适配真实刘海屏与挖孔屏\n2. 修复 Android 端静态图片加载，基于原生 Assets 跨平台通道渲染\n3. 接入魔搭社区国内极速下载与 OTA 管道",
+            "code": 0,
+            "updateStatus": 1,
+            "versionCode": 2,
+            "versionName": "1.0.1",
+            "modifyContent": "- 更新官方全新 3D 打印应用图标与自适应桌面图标\n- 接入应用内原生 OTA 自动检测与无缝覆盖安装\n- 固化构建签名私钥（makeitreal.jks），彻底杜绝签名冲突\n- 个人中心增加手动检查更新入口\n- 适配真实手机打孔刘海屏沉浸式体验",
             "downloadUrl": "https://www.modelscope.cn/models/HoyeWork/makeitreal-app/resolve/master/MakeItReal-latest.apk",
-            "forceUpdate": false
+            "apkSize": $APK_SIZE,
+            "apkMd5": "$APK_MD5",
+            "publishTime": "$PUBLISH_TIME"
           }
           EOF
+          echo "Generated latest.json:"
+          cat release-assets/latest.json
 
       - name: Sync to ModelScope (Domestic High-Speed CDN)
         if: env.MODELSCOPE_API_TOKEN != ''

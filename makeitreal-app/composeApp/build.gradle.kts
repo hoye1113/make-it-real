@@ -61,8 +61,17 @@ android {
         applicationId = "com.eufymake.real"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("keystore/makeitreal.jks")
+            storePassword = "makeitreal123"
+            keyAlias = "makeitreal"
+            keyPassword = "makeitreal123"
+        }
     }
 
     sourceSets {
@@ -79,7 +88,11 @@ android {
 
     buildTypes {
         getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
+        }
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
