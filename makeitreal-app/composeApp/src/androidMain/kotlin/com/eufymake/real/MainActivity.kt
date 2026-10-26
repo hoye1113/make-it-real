@@ -1,7 +1,17 @@
 package com.eufymake.real
 
-// Android entry point when compiled with Android target
-// In Android Studio, this activity launches the shared Compose App()
-class MainActivity {
-    // Shared Compose entry: com.eufymake.real.ui.App()
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.eufymake.real.ui.App
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            App()
+        }
+    }
 }
