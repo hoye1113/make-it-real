@@ -77,6 +77,8 @@ android {
             storePassword = keystorePass
             keyAlias = keyAliasName
             keyPassword = keyPass
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 
